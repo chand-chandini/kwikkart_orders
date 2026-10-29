@@ -1,0 +1,47 @@
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--kk-brand-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.bg-brand-secondary {
+  background-color: var(--kk-brand-secondary) !important;
+}
+
+.navbar-brand__name {
+  // Org names can run long ("SREE MAHALAKSHMI KIRANA GENERAL STORE") — truncate instead of
+  // pushing the toggler/nav off-screen on narrow widths. min-width: 0 overrides the flex item
+  // default of min-width: auto, which otherwise blocks the ellipsis from ever kicking in.
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
+
+  @media (min-width: 576px) {
+    max-width: 260px;
+  }
+}
+
+.header-search {
+  min-width: 0;
+}
+
+.header-search--inline {
+  // Lets it flex-grow with the row but keeps the field from stretching edge-to-edge on very
+  // wide desktop screens.
+  max-width: 560px;
+}
+
+.header-search--mobile {
+  // Full available width on mobile/tablet — unlike the desktop field this isn't sharing a row
+  // with anything else, so no cap is needed.
+  max-width: 100%;
+}

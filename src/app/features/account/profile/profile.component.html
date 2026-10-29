@@ -1,0 +1,21 @@
+<div class="container py-4" style="max-width: 480px;">
+  <h3 class="fw-bold mb-4">My profile</h3>
+
+  <form (ngSubmit)="save()">
+    <label class="form-label">Mobile number</label>
+    <input class="form-control mb-3" [value]="mobile" disabled />
+
+    <label class="form-label" for="name">Full name</label>
+    <input id="name" class="form-control mb-3" [(ngModel)]="name" name="name" required />
+
+    <label class="form-label" for="email">Email</label>
+    <input id="email" class="form-control mb-3" type="email" [(ngModel)]="email" name="email" />
+
+    <button class="btn btn-brand" type="submit" [disabled]="saving">
+      @if (saving) {
+        <span class="spinner-border spinner-border-sm me-2"></span>
+      }
+      Save changes
+    </button>
+  </form>
+</div>

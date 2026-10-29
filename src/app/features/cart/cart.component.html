@@ -1,0 +1,72 @@
+@if (loading) {
+  <app-spinner label="Loading your cart..." />
+} @else if (cartService.cart().items.length === 0) {
+  <app-empty-state icon="🛒" title="Your cart is empty" message="Add products to get started.">
+    <a [routerLink]="['/o', orgCode]" class="btn btn-brand">Browse products</a>
+  </app-empty-state>
+} @else {
+  <div class="container py-4">
+    <h3 class="fw-bold mb-4">Your cart</h3>
+
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+        @for (vendor of cartService.cart().vendors; track vendor.vendor_id) {
+          <div class="card mb-3">
+            <div class="card-header bg-white fw-semibold">{{ vendor.vendor_name }}</div>
+            <div class="card-body p-0">
+              @for (item of itemsForVendor(vendor); track item.id) {
+                <div class="cart-item-row p-3 border-bottom">
+                  @if (item.image_url) {
+                    <img [src]="item.image_url" [alt]="item.name" class="cart-item-image" />
+                  } @else {
+                    <div class="cart-item-image cart-item-image--placeholder"></div>
+                  }
+                  <div class="cart-item-row__info">
+                    <div class="fw-semibold">{{ item.name }}</div>
+                    <div class="text-muted small">{{ unitPrice(item) | currency: 'INR' : 'symbol' : '1.0-2' }} / unit</div>
+                  </div>
+                  <div class="cart-item-row__actions">
+                    <app-qty-stepper [qty]="item.qty" [max]="item.max_qty" [disabled]="busyItemId === item.id" (qtyChange)="updateQty(item.id, $event)" />
+                    <div class="fw-semibold text-end" style="min-width: 72px;">
+                      {{ lineTotal(item) | currency: 'INR' : 'symbol' : '1.0-2' }}
+                    </div>
+                    <button class="btn btn-sm btn-link text-danger px-0" [disabled]="busyItemId === item.id" (click)="remove(item.id)">Remove</button>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="card-footer bg-white d-flex justify-content-between small text-muted">
+              <span>{{ vendor.item_count }} items</span>
+              <span>Delivery: {{ vendor.delivery_charge | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="fw-semibold mb-3">Order summary</h6>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Items total</span>
+              <span>{{ cartService.cart().items_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Delivery</span>
+              <span>{{ cartService.cart().delivery_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+            <hr />
+            <div class="d-flex justify-content-between fw-bold mb-3">
+              <span>Grand total</span>
+              <span>{{ cartService.cart().grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+            @if (cartService.cart().address_location_missing) {
+              <div class="alert alert-warning small">Add a delivery address to see accurate delivery charges.</div>
+            }
+            <button class="btn btn-brand w-100" (click)="checkout()">Proceed to checkout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

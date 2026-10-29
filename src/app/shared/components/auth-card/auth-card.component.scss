@@ -1,0 +1,21 @@
+// No forced viewport-height here: this card already sits inside org-shell's header + main +
+// footer, which pins the footer to the bottom on its own (min-vh-100 flex column) — adding a
+// ~100vh minimum on top of that pushed the footer another screen down, leaving a wall of empty
+// space below the card on every auth screen.
+.auth-card-wrap {
+  padding: 3rem 1rem;
+  background: linear-gradient(180deg, rgba(26, 127, 60, 0.06), transparent 40%);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 18px;
+}
+
+.auth-card__logo {
+  height: 40px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+}

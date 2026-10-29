@@ -1,0 +1,71 @@
+@if (loading) {
+  <app-spinner label="Loading order..." />
+} @else if (notFound) {
+  <div class="container py-5 text-center text-muted">Order not found.</div>
+} @else {
+  <div class="container py-4">
+    @if (parentOrder) {
+      <h3 class="fw-bold mb-1">Order #{{ parentOrder.order_number }}</h3>
+      @if (parentOrder.payment_status) {
+        <div class="text-muted mb-4">{{ paymentLabels[parentOrder.payment_status] }}</div>
+      }
+
+      @for (vo of vendorEntries; track vo.id) {
+        <div class="card mb-3">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <span class="fw-semibold">{{ vo.vendor_name }}</span>
+            <span class="badge" [class]="statusBadge[vo.status]">{{ statusLabels[vo.status] }}</span>
+          </div>
+          <div class="card-body">
+            @for (item of vo.items; track item.id) {
+              <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+                @if (item.image_url) {
+                  <img [src]="item.image_url" class="cart-item-image" alt="" />
+                } @else {
+                  <div class="cart-item-image cart-item-image--placeholder"></div>
+                }
+                <div class="flex-grow-1">
+                  <div>{{ item.product_name }}</div>
+                  <div class="text-muted small">Qty {{ item.qty }} × {{ item.unit_price | currency: 'INR' : 'symbol' : '1.0-2' }}</div>
+                </div>
+                <div class="fw-semibold">{{ item.line_total | currency: 'INR' : 'symbol' : '1.0-2' }}</div>
+              </div>
+            }
+            <div class="d-flex justify-content-between pt-2 fw-semibold">
+              <span>Total</span>
+              <span>{{ vo.grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    } @else if (singleOrder) {
+      <h3 class="fw-bold mb-1">Order #{{ singleOrder.order_number }}</h3>
+      <div class="card mb-3">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">{{ singleOrder.vendor_name }}</span>
+          <span class="badge" [class]="statusBadge[singleOrder.status]">{{ statusLabels[singleOrder.status] }}</span>
+        </div>
+        <div class="card-body">
+          @for (item of singleOrder.items; track item.id) {
+            <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+              @if (item.image_url) {
+                <img [src]="item.image_url" class="cart-item-image" alt="" />
+              } @else {
+                <div class="cart-item-image cart-item-image--placeholder"></div>
+              }
+              <div class="flex-grow-1">
+                <div>{{ item.product_name }}</div>
+                <div class="text-muted small">Qty {{ item.qty }} × {{ item.unit_price | currency: 'INR' : 'symbol' : '1.0-2' }}</div>
+              </div>
+              <div class="fw-semibold">{{ item.line_total | currency: 'INR' : 'symbol' : '1.0-2' }}</div>
+            </div>
+          }
+          <div class="d-flex justify-content-between pt-2 fw-semibold">
+            <span>Total</span>
+            <span>{{ singleOrder.grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}

@@ -1,0 +1,80 @@
+<header class="bg-white shadow-sm sticky-top">
+  <nav class="navbar navbar-expand-lg py-2">
+    <div class="container flex-wrap column-gap-3">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-brand" [routerLink]="['/o', orgCode]">
+        @if (org.logo) {
+          <img [src]="org.logo" alt="" width="32" height="32" class="rounded-circle object-fit-cover" />
+        } @else {
+          <span class="brand-mark">{{ org.name.charAt(0) }}</span>
+        }
+        <span class="navbar-brand__name">{{ org.name }}</span>
+      </a>
+
+      <!-- Desktop/tablet: inline between the brand and the nav links, one row. -->
+      <form class="d-none d-lg-flex header-search header-search--inline order-lg-2 flex-grow-1 mx-lg-3" (ngSubmit)="onSearch()">
+        <input
+          class="form-control"
+          type="search"
+          placeholder="Search for products..."
+          [(ngModel)]="searchTerm"
+          name="q"
+          aria-label="Search products"
+        />
+        <button class="btn btn-brand ms-2" type="submit">Search</button>
+      </form>
+
+      <button class="navbar-toggler order-lg-3" type="button" data-bs-toggle="collapse" data-bs-target="#kkNav" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Mobile/tablet: no room for brand + search + nav in one row, so it wraps to its own full
+           -width line — but inside this same nav container, flush with the header, not a visually
+           separate block below it. -->
+      <form class="d-flex d-lg-none header-search header-search--mobile order-4 w-100 mt-2" (ngSubmit)="onSearch()">
+        <input
+          class="form-control"
+          type="search"
+          placeholder="Search for products..."
+          [(ngModel)]="searchTerm"
+          name="q"
+          aria-label="Search products"
+        />
+        <button class="btn btn-brand ms-2" type="submit">Search</button>
+      </form>
+
+      <div class="collapse navbar-collapse order-lg-4 order-5" id="kkNav">
+        <ul class="navbar-nav ms-lg-auto align-items-lg-center gap-lg-2">
+          <li class="nav-item">
+            <a class="nav-link position-relative" [routerLink]="['/o', orgCode, 'cart']">
+              Cart
+              @if (cartService.itemCount() > 0) {
+                <span class="badge rounded-pill bg-brand-secondary position-absolute top-0 start-100 translate-middle">
+                  {{ cartService.itemCount() }}
+                </span>
+              }
+            </a>
+          </li>
+
+          @if (authService.isAuthenticated()) {
+            <li class="nav-item"><a class="nav-link" [routerLink]="['/o', orgCode, 'orders']">Orders</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                {{ authService.currentUser()?.name || 'Account' }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" [routerLink]="['/o', orgCode, 'account']">My profile</a></li>
+                <li><a class="dropdown-item" [routerLink]="['/o', orgCode, 'account', 'addresses']">Addresses</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><button class="dropdown-item" type="button" (click)="logout()">Sign out</button></li>
+              </ul>
+            </li>
+          } @else {
+            <li class="nav-item">
+              <a class="nav-link" [routerLink]="['/o', orgCode, 'auth', 'mobile']">Sign in</a>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>

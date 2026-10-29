@@ -1,0 +1,71 @@
+.product-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+}
+
+.product-card__image-wrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: #f3f4f6;
+  // Hard backstop: whatever the image's natural size is, it can never visually escape this box.
+  overflow: hidden;
+}
+
+.product-card__image {
+  // Absolute + inset, not width/height: 100% on a flow element — the box's pixel size comes
+  // straight from the parent's aspect-ratio-computed size, not from percentage-height resolution
+  // on an inline replaced element (img defaults to display: inline), which is what let the photo
+  // render at its own natural width instead of fitting the square slot.
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.product-card__image--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--kk-brand-muted);
+  font-size: 0.85rem;
+}
+
+.product-card__discount {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-card__name {
+  // Reserves 2 lines of height whether the name wraps or not, so the price/button row lands at
+  // the same y-position across every card in a row instead of shifting up for short names.
+  min-height: 2.6em;
+  line-height: 1.3;
+}
+
+.btn-outline-brand {
+  color: var(--kk-brand-primary);
+  border-color: var(--kk-brand-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--kk-brand-primary);
+    color: #fff;
+  }
+}

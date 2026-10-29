@@ -1,0 +1,19 @@
+<app-auth-card title="Tell us about you" subtitle="Just a couple of details to finish setting up your account.">
+  <form (ngSubmit)="submit()">
+    <label class="form-label" for="name">Full name</label>
+    <input id="name" class="form-control mb-3" type="text" [(ngModel)]="name" name="name" required />
+
+    <label class="form-label" for="email">Email (optional)</label>
+    <input id="email" class="form-control mb-2" type="email" [(ngModel)]="email" name="email" />
+
+    @if (errorMessage) {
+      <div class="text-danger small mb-2">{{ errorMessage }}</div>
+    }
+    <button class="btn btn-brand w-100 mt-3 py-2" type="submit" [disabled]="submitting">
+      @if (submitting) {
+        <span class="spinner-border spinner-border-sm me-2"></span>
+      }
+      Continue
+    </button>
+  </form>
+</app-auth-card>

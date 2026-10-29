@@ -1,0 +1,137 @@
+@if (loading) {
+  <app-spinner label="Preparing checkout..." />
+} @else {
+  <div class="container py-4">
+    <h3 class="fw-bold mb-4">Checkout</h3>
+
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+        <div class="card mb-3">
+          <div class="card-header bg-white fw-semibold">Delivery address</div>
+          <div class="card-body">
+            @for (address of addresses; track address.id) {
+              <label class="d-flex align-items-start gap-2 p-2 border rounded mb-2 address-option" [class.address-option--active]="selectedAddressId === address.id">
+                <input type="radio" name="address" [checked]="selectedAddressId === address.id" (change)="selectAddress(address.id)" />
+                <span>
+                  <strong>{{ address.label || 'Address' }}</strong> — {{ address.contact_name }}, {{ address.contact_phone }}<br />
+                  <span class="text-muted small">
+                    {{ address.house_no }} {{ address.address_line }}, {{ address.city }}, {{ address.state }} - {{ address.pincode }}
+                  </span>
+                </span>
+              </label>
+            }
+
+            @if (!showAddressForm) {
+              <button class="btn btn-outline-brand btn-sm" type="button" (click)="showAddressForm = true">+ Add new address</button>
+            } @else {
+              <form class="row g-2 mt-2" (ngSubmit)="saveAddress()">
+                <div class="col-6"><input class="form-control" placeholder="Full name" [(ngModel)]="newAddress.contact_name" name="contact_name" required /></div>
+                <div class="col-6"><input class="form-control" placeholder="Phone" [(ngModel)]="newAddress.contact_phone" name="contact_phone" required /></div>
+                <div class="col-12"><input class="form-control" placeholder="House no / Flat" [(ngModel)]="newAddress.house_no" name="house_no" /></div>
+                <div class="col-12"><input class="form-control" placeholder="Address line" [(ngModel)]="newAddress.address_line" name="address_line" required /></div>
+                <div class="col-4"><input class="form-control" placeholder="City" [(ngModel)]="newAddress.city" name="city" required /></div>
+                <div class="col-4"><input class="form-control" placeholder="State" [(ngModel)]="newAddress.state" name="state" required /></div>
+                <div class="col-4"><input class="form-control" placeholder="Pincode" [(ngModel)]="newAddress.pincode" name="pincode" required /></div>
+                <div class="col-12"><input class="form-control" placeholder="Landmark (optional)" [(ngModel)]="newAddress.landmark" name="landmark" /></div>
+                <div class="col-12 d-flex align-items-center gap-2">
+                  <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="locating" (click)="useMyLocation()">
+                    @if (locating) {
+                      <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+                    📍 Use my current location
+                  </button>
+                  @if (newAddress.latitude) {
+                    <span class="small text-success">Location captured ✓</span>
+                  }
+                </div>
+                <div class="col-12 d-flex gap-2 mt-2">
+                  <button class="btn btn-brand" type="submit">Save address</button>
+                  <button class="btn btn-link" type="button" (click)="showAddressForm = false">Cancel</button>
+                </div>
+              </form>
+            }
+          </div>
+        </div>
+
+        @if (slots.length) {
+          <div class="card mb-3">
+            <div class="card-header bg-white fw-semibold">Delivery slot</div>
+            <div class="card-body d-flex flex-wrap gap-2">
+              @for (slot of slots; track slot.id) {
+                <button
+                  type="button"
+                  class="btn btn-sm"
+                  [class.btn-brand]="selectedSlotId === slot.id"
+                  [class.btn-outline-secondary]="selectedSlotId !== slot.id"
+                  (click)="selectedSlotId = slot.id"
+                >
+                  {{ slot.label }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="card mb-3">
+          <div class="card-header bg-white fw-semibold">Payment method</div>
+          <div class="card-body">
+            <label class="d-flex align-items-center gap-2 mb-2" [class.text-muted]="!codEnabled">
+              <input type="radio" name="pm" value="cod" [(ngModel)]="paymentMethod" [disabled]="!codEnabled" />
+              Cash on Delivery @if (!codEnabled) { (not available) }
+            </label>
+            <label class="d-flex align-items-center gap-2" [class.text-muted]="!onlineEnabled">
+              <input type="radio" name="pm" value="online" [(ngModel)]="paymentMethod" [disabled]="!onlineEnabled" />
+              Pay online (UPI / Card / Netbanking) @if (!onlineEnabled) { (not available) }
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header bg-white fw-semibold">Order instructions (optional)</div>
+          <div class="card-body">
+            <textarea class="form-control" rows="2" [(ngModel)]="instructions" name="instructions" placeholder="E.g. leave at the door"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="fw-semibold mb-3">Order summary</h6>
+            <!-- Coupons disabled for now (2026-10-29, pending go-live decision).
+            <div class="input-group mb-3">
+              <input class="form-control" placeholder="Coupon code" [(ngModel)]="couponCode" name="coupon" />
+              <button class="btn btn-outline-brand" type="button" (click)="applyCoupon()">Apply</button>
+            </div>
+            -->
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Items total</span>
+              <span>{{ cartService.cart().items_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Delivery</span>
+              <span>{{ cartService.cart().delivery_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+            @if (couponDiscount) {
+              <div class="d-flex justify-content-between mb-2 text-success">
+                <span>Coupon discount</span>
+                <span>-{{ couponDiscount | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+              </div>
+            }
+            <hr />
+            <div class="d-flex justify-content-between fw-bold mb-3">
+              <span>Total payable</span>
+              <span>{{ cartService.cart().grand_total - couponDiscount | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+            <button class="btn btn-brand w-100" [disabled]="placing || !selectedAddressId" (click)="placeOrder()">
+              @if (placing) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              }
+              Place order
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

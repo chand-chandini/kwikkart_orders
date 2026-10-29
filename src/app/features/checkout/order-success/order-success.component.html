@@ -1,0 +1,25 @@
+@if (loading) {
+  <app-spinner label="Confirming your order..." />
+} @else {
+  <div class="container py-5 text-center" style="max-width: 560px;">
+    <div class="fs-1 mb-3">✅</div>
+    <h2 class="fw-bold">Order placed successfully!</h2>
+    @if (order) {
+      <p class="text-muted">Order #{{ order.order_number || order.id }}</p>
+      <div class="card text-start mt-4">
+        <div class="card-body">
+          @for (vo of order.vendor_orders; track vo.id) {
+            <div class="d-flex justify-content-between py-1">
+              <span>{{ vo.vendor_name }} ({{ vo.items.length }} items)</span>
+              <span>{{ vo.grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+    <div class="d-flex gap-2 justify-content-center mt-4">
+      <a class="btn btn-brand" [routerLink]="['/o', orgCode, 'orders']">View orders</a>
+      <a class="btn btn-outline-brand" [routerLink]="['/o', orgCode]">Continue shopping</a>
+    </div>
+  </div>
+}

@@ -1,0 +1,50 @@
+<div class="container py-4">
+  @if (subcategories.length) {
+    <div class="d-flex gap-2 overflow-auto pb-2 mb-3 subcategory-scroller">
+      <button
+        type="button"
+        class="btn btn-sm rounded-pill"
+        [class.btn-brand]="activeSubcategoryId === null"
+        [class.btn-outline-secondary]="activeSubcategoryId !== null"
+        (click)="selectSubcategory(null)"
+      >
+        All
+      </button>
+      @for (sub of subcategories; track sub.id) {
+        <button
+          type="button"
+          class="btn btn-sm rounded-pill text-nowrap"
+          [class.btn-brand]="activeSubcategoryId === sub.id"
+          [class.btn-outline-secondary]="activeSubcategoryId !== sub.id"
+          (click)="selectSubcategory(sub.id)"
+        >
+          {{ sub.name }}
+        </button>
+      }
+    </div>
+  }
+
+  @if (loading) {
+    <app-spinner label="Loading products..." />
+  } @else if (products.length) {
+    <div class="row g-3">
+      @for (product of products; track product.id) {
+        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+          <app-product-card [product]="product" [orgCode]="orgCode" [orgId]="product.org_id" />
+        </div>
+      }
+    </div>
+    @if (hasMore) {
+      <div class="text-center mt-4">
+        <button class="btn btn-outline-brand" [disabled]="loadingMore" (click)="loadMore()">
+          @if (loadingMore) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          }
+          Load more
+        </button>
+      </div>
+    }
+  } @else {
+    <app-empty-state icon="📦" title="No products in this category" />
+  }
+</div>

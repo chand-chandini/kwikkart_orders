@@ -1,0 +1,28 @@
+<app-auth-card title="Sign in" subtitle="We'll send you a one-time code to verify your number.">
+  <form (ngSubmit)="submit()">
+    <label class="form-label" for="mobile">Mobile number</label>
+    <div class="input-group mb-2">
+      <span class="input-group-text">+91</span>
+      <input
+        id="mobile"
+        class="form-control"
+        type="tel"
+        inputmode="numeric"
+        maxlength="10"
+        placeholder="10-digit mobile number"
+        [(ngModel)]="mobile"
+        name="mobile"
+        required
+      />
+    </div>
+    @if (errorMessage) {
+      <div class="text-danger small mb-2">{{ errorMessage }}</div>
+    }
+    <button class="btn btn-brand w-100 mt-3 py-2" type="submit" [disabled]="submitting">
+      @if (submitting) {
+        <span class="spinner-border spinner-border-sm me-2"></span>
+      }
+      Send OTP
+    </button>
+  </form>
+</app-auth-card>

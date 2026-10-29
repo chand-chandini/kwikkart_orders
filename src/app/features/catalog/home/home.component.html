@@ -1,0 +1,73 @@
+@if (loading) {
+  <app-spinner label="Loading store..." />
+} @else {
+  <div class="container py-4">
+    @if (banners.length) {
+      <div id="homeBanners" class="carousel slide banner-carousel mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner rounded-4 overflow-hidden">
+          @for (banner of banners; track banner.id; let i = $index) {
+            <div class="carousel-item" [class.active]="i === 0">
+              <div class="banner-frame">
+                <img [src]="banner.banner_image" [alt]="banner.title || ''" class="banner-image" />
+                @if (banner.title) {
+                  <div class="banner-caption">{{ banner.title }}</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+        @if (banners.length > 1) {
+          <button class="carousel-control-prev" type="button" data-bs-target="#homeBanners" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#homeBanners" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+          </button>
+          <div class="carousel-indicators banner-indicators">
+            @for (banner of banners; track banner.id; let i = $index) {
+              <button
+                type="button"
+                data-bs-target="#homeBanners"
+                [attr.data-bs-slide-to]="i"
+                [class.active]="i === 0"
+              ></button>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (categories.length) {
+      <h5 class="fw-bold mb-3">Shop by category</h5>
+      <div class="row g-3 mb-4">
+        @for (category of categories; track category.id) {
+          <div class="col-4 col-sm-3 col-md-2">
+            <a [routerLink]="['/o', orgCode, 'c', category.id]" class="text-decoration-none text-reset d-flex flex-column align-items-center gap-2">
+              <div class="category-tile" [style.background]="category.tint_color || '#f3f4f6'">
+                @if (category.image_url) {
+                  <img [src]="category.image_url" [alt]="category.name" />
+                } @else {
+                  <span class="fs-3">{{ category.icon || '🛍️' }}</span>
+                }
+              </div>
+              <span class="small text-center text-truncate-2">{{ category.name }}</span>
+            </a>
+          </div>
+        }
+      </div>
+    }
+
+    <h5 class="fw-bold mb-3">Popular products</h5>
+    @if (products.length) {
+      <div class="row g-3">
+        @for (product of products; track product.id) {
+          <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+            <app-product-card [product]="product" [orgCode]="orgCode" [orgId]="product.org_id" />
+          </div>
+        }
+      </div>
+    } @else {
+      <app-empty-state icon="🛒" title="No products yet" message="This store hasn't added products yet." />
+    }
+  </div>
+}
