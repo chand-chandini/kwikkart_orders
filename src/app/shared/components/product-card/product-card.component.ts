@@ -3,14 +3,16 @@ import { Component, Input, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { CartService } from '../../../core/services/cart.service';
+import { CatalogService } from '../../../core/services/catalog.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Product } from '../../../core/models/product.model';
+import { Product, ProductDetail } from '../../../core/models/product.model';
+import { VariantPickerModalComponent } from '../variant-picker-modal/variant-picker-modal.component';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [RouterLink, CurrencyPipe],
+  imports: [RouterLink, CurrencyPipe, VariantPickerModalComponent],
   templateUrl: './product-card.component.html',
   styleUrl: './product-card.component.scss'
 })
@@ -21,8 +23,13 @@ export class ProductCardComponent {
 
   adding = false;
   added = false;
+  // Populated only when the product turns out to have extra size options beyond its own base
+  // price — the list-level Product carries no variant data, so we don't know this until the
+  // detail fetch below resolves.
+  pickerProduct: ProductDetail | null = null;
 
   private readonly cart = inject(CartService);
+  private readonly catalog = inject(CatalogService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
@@ -46,7 +53,24 @@ export class ProductCardComponent {
     }
 
     this.adding = true;
-    this.cart.addToCart(this.orgId, { product_id: this.product.id }).subscribe({
+    this.catalog.getProduct(this.product.id).subscribe({
+      next: (detail) => {
+        this.adding = false;
+        // The product's own base price/weight_label counts as one size option on its own, so
+        // any extra row in `variants` means there's more than one size to choose from.
+        if (detail.variants.length > 0) {
+          this.pickerProduct = detail;
+          return;
+        }
+        this.addDirect();
+      },
+      error: () => (this.adding = false)
+    });
+  }
+
+  private addDirect(variantId?: number): void {
+    this.adding = true;
+    this.cart.addToCart(this.orgId, { product_id: this.product.id, variant_id: variantId }).subscribe({
       next: () => {
         this.adding = false;
         this.added = true;
@@ -55,5 +79,15 @@ export class ProductCardComponent {
       },
       error: () => (this.adding = false)
     });
+  }
+
+  onPickerClosed(): void {
+    this.pickerProduct = null;
+  }
+
+  onPickerAdded(): void {
+    this.pickerProduct = null;
+    this.added = true;
+    setTimeout(() => (this.added = false), 1500);
   }
 }

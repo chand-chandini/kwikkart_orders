@@ -25,3 +25,18 @@ export const PAYMENT_STATUS_LABELS: Record<number, string> = {
   4: 'Payment failed',
   5: 'Refunded'
 };
+
+// COD orders sit at payment_status 1 ("pending") until the courier collects cash on delivery --
+// that's its normal, expected state, not something wrong, so it reads as "Cash on Delivery"
+// instead of the alarming-sounding "Payment pending". Online orders still show their real
+// status (Paid / Payment pending / Payment failed / Refunded), since that's actually meaningful
+// there.
+export function paymentDisplayLabel(
+  method: string | null | undefined,
+  status: number | null | undefined
+): string | null {
+  if (method === 'cod') {
+    return 'Cash on Delivery';
+  }
+  return status != null ? PAYMENT_STATUS_LABELS[status] ?? null : null;
+}

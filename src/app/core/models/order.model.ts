@@ -50,6 +50,7 @@ export interface Order {
   order_number: string;
   grand_total: number;
   payment_status: number;
+  payment_method: PaymentMethod | null;
   placed_at: string;
   image_url: string | null;
   item_count: number;
@@ -89,6 +90,7 @@ export interface ParentOrder {
   order_number: string;
   grand_total: number;
   payment_status: number;
+  payment_method: PaymentMethod;
   vendor_orders: ParentOrderVendorEntry[];
   payment_summary: unknown;
   address: unknown;

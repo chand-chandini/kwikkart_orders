@@ -93,6 +93,40 @@ export interface ProductDetail extends Product {
   is_wishlisted: boolean;
 }
 
+// A product's own price/weight_label (e.g. "100ml") is the first size option, stored on the
+// product row itself rather than as a row in ecommerce_product_variants_t -- only the *other*
+// pack sizes (e.g. "200ml", "500ml") live there. A null variantId means "this option is the
+// product's own base price," which is exactly what AddToCartPayload.variant_id already treats
+// as "no variant" -- so selecting it needs no special-casing on add-to-cart.
+export interface ProductSizeOption {
+  variantId: number | null;
+  name: string;
+  price: number;
+  mrp: number | null;
+  stockQty: number;
+  isAvailable: boolean;
+}
+
+export function buildSizeOptions(product: ProductDetail): ProductSizeOption[] {
+  const base: ProductSizeOption = {
+    variantId: null,
+    name: product.weight_label || 'Standard',
+    price: product.price,
+    mrp: product.mrp,
+    stockQty: product.stock_qty,
+    isAvailable: product.is_available
+  };
+  const variantOptions: ProductSizeOption[] = product.variants.map((v) => ({
+    variantId: v.id,
+    name: v.name,
+    price: v.price,
+    mrp: v.mrp,
+    stockQty: v.stock_qty,
+    isAvailable: v.is_available
+  }));
+  return [base, ...variantOptions];
+}
+
 export interface ProductListFilters {
   vendorId?: number;
   categoryId?: number;

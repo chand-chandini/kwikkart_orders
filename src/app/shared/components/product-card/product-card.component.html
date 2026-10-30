@@ -44,3 +44,12 @@
     </button>
   </div>
 </a>
+
+@if (pickerProduct) {
+  <app-variant-picker-modal
+    [product]="pickerProduct"
+    [orgId]="orgId"
+    (closed)="onPickerClosed()"
+    (added)="onPickerAdded()"
+  />
+}

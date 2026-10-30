@@ -6,7 +6,7 @@ import { catchError, of } from 'rxjs';
 import { OrgContextService } from '../../../core/services/org-context.service';
 import { OrdersService } from '../../../core/services/orders.service';
 import { OrderDetail, ParentOrder, ParentOrderVendorEntry } from '../../../core/models/order.model';
-import { ORDER_STATUS_BADGE, ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from '../../../core/config/order-status';
+import { ORDER_STATUS_BADGE, ORDER_STATUS_LABELS, paymentDisplayLabel } from '../../../core/config/order-status';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 
 @Component({
@@ -22,7 +22,6 @@ export class OrderDetailComponent implements OnInit {
 
   readonly statusLabels = ORDER_STATUS_LABELS;
   readonly statusBadge = ORDER_STATUS_BADGE;
-  readonly paymentLabels = PAYMENT_STATUS_LABELS;
 
   loading = true;
   notFound = false;
@@ -35,6 +34,10 @@ export class OrderDetailComponent implements OnInit {
 
   get vendorEntries(): ParentOrderVendorEntry[] {
     return this.parentOrder?.vendor_orders ?? [];
+  }
+
+  get paymentLabel(): string | null {
+    return paymentDisplayLabel(this.parentOrder?.payment_method, this.parentOrder?.payment_status);
   }
 
   ngOnInit(): void {

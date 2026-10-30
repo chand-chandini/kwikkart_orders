@@ -6,8 +6,8 @@
   <div class="container py-4">
     @if (parentOrder) {
       <h3 class="fw-bold mb-1">Order #{{ parentOrder.order_number }}</h3>
-      @if (parentOrder.payment_status) {
-        <div class="text-muted mb-4">{{ paymentLabels[parentOrder.payment_status] }}</div>
+      @if (paymentLabel; as label) {
+        <div class="text-muted mb-4">{{ label }}</div>
       }
 
       @for (vo of vendorEntries; track vo.id) {

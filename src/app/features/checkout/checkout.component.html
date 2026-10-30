@@ -77,6 +77,14 @@
                     <span class="small text-success">Location captured ✓</span>
                   }
                 </div>
+                <div class="col-12">
+                  <div class="small text-muted mb-1">Save address as</div>
+                  <div class="label-chip-group">
+                    <button type="button" class="label-chip" [class.label-chip--selected]="newAddress.label === 'Home'" (click)="newAddress.label = 'Home'">🏠 Home</button>
+                    <button type="button" class="label-chip" [class.label-chip--selected]="newAddress.label === 'Work'" (click)="newAddress.label = 'Work'">💼 Work</button>
+                    <button type="button" class="label-chip" [class.label-chip--selected]="newAddress.label === 'Other'" (click)="newAddress.label = 'Other'">📍 Other</button>
+                  </div>
+                </div>
                 <div class="col-12 d-flex gap-2 mt-2">
                   <button class="btn btn-brand" type="submit">Save address</button>
                   <button class="btn btn-link" type="button" (click)="showAddressForm = false">Cancel</button>
@@ -108,14 +116,21 @@
         <div class="card mb-3">
           <div class="card-header bg-white fw-semibold">Payment method</div>
           <div class="card-body">
-            <label class="d-flex align-items-center gap-2 mb-2" [class.text-muted]="!codEnabled">
-              <input type="radio" name="pm" value="cod" [(ngModel)]="paymentMethod" [disabled]="!codEnabled" />
-              Cash on Delivery @if (!codEnabled) { (not available) }
-            </label>
-            <label class="d-flex align-items-center gap-2" [class.text-muted]="!onlineEnabled">
-              <input type="radio" name="pm" value="online" [(ngModel)]="paymentMethod" [disabled]="!onlineEnabled" />
-              Pay online (UPI / Card / Netbanking) @if (!onlineEnabled) { (not available) }
-            </label>
+            @if (codEnabled) {
+              <label class="d-flex align-items-center gap-2 mb-2">
+                <input type="radio" name="pm" value="cod" [(ngModel)]="paymentMethod" />
+                Cash on Delivery
+              </label>
+            }
+            @if (onlineEnabled) {
+              <label class="d-flex align-items-center gap-2">
+                <input type="radio" name="pm" value="online" [(ngModel)]="paymentMethod" />
+                Pay online (UPI / Card / Netbanking)
+              </label>
+            }
+            @if (!codEnabled && !onlineEnabled) {
+              <div class="text-muted small">No payment methods are available for this store right now.</div>
+            }
           </div>
         </div>
 

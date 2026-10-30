@@ -45,12 +45,12 @@ a {
 
 .banner-frame {
   position: relative;
-  aspect-ratio: 16 / 7;
+  aspect-ratio: 21 / 7;
   background: #eef0f3;
   overflow: hidden;
 
   @media (max-width: 575.98px) {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 7.5;
   }
 }
 
@@ -275,10 +275,19 @@ a {
   padding: 0.6rem 0.75rem;
   text-align: left;
   line-height: 1.3;
+  min-height: 60px;
 
   &:disabled {
     opacity: 0.5;
   }
+}
+
+// auto-fit keeps every tile the same width/height regardless of label length, instead of
+// Bootstrap's row-cols-2 (which only fixes the column count, not the row height).
+.size-option-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.6rem;
 }
 
 .variant-option__price {
@@ -301,6 +310,20 @@ a {
   border: 1px solid #edf0f3;
   border-radius: 16px;
   padding: 1rem 1.1rem;
+}
+
+// Qty stepper + Add to cart row (product detail page) -- the stepper is already 44px tall on its
+// own, this just matches the button to it and lays them out in one row.
+.qty-add-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  > .btn {
+    height: 44px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
 }
 
 .cart-item-image {
@@ -378,6 +401,31 @@ a {
   .cart-item-row__actions {
     flex-basis: 100%;
     justify-content: space-between;
+  }
+}
+
+.label-chip-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.label-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--kk-brand-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  &.label-chip--selected {
+    border-color: var(--kk-brand-primary);
+    color: var(--kk-brand-primary);
+    background: rgba(26, 127, 60, 0.06);
   }
 }
 

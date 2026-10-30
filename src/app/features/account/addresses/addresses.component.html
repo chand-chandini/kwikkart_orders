@@ -13,13 +13,20 @@
       <form class="card card-body mb-4 row g-2" (ngSubmit)="save()">
         <div class="col-6"><input class="form-control" placeholder="Full name" [(ngModel)]="form.contact_name" name="contact_name" required /></div>
         <div class="col-6"><input class="form-control" placeholder="Phone" [(ngModel)]="form.contact_phone" name="contact_phone" required /></div>
-        <div class="col-12"><input class="form-control" placeholder="Label (Home/Work)" [(ngModel)]="form.label" name="label" /></div>
         <div class="col-12"><input class="form-control" placeholder="House no / Flat" [(ngModel)]="form.house_no" name="house_no" /></div>
         <div class="col-12"><input class="form-control" placeholder="Address line" [(ngModel)]="form.address_line" name="address_line" required /></div>
         <div class="col-4"><input class="form-control" placeholder="City" [(ngModel)]="form.city" name="city" required /></div>
         <div class="col-4"><input class="form-control" placeholder="State" [(ngModel)]="form.state" name="state" required /></div>
         <div class="col-4"><input class="form-control" placeholder="Pincode" [(ngModel)]="form.pincode" name="pincode" required /></div>
         <div class="col-12"><input class="form-control" placeholder="Landmark (optional)" [(ngModel)]="form.landmark" name="landmark" /></div>
+        <div class="col-12">
+          <div class="small text-muted mb-1">Save address as</div>
+          <div class="label-chip-group">
+            <button type="button" class="label-chip" [class.label-chip--selected]="form.label === 'Home'" (click)="form.label = 'Home'">🏠 Home</button>
+            <button type="button" class="label-chip" [class.label-chip--selected]="form.label === 'Work'" (click)="form.label = 'Work'">💼 Work</button>
+            <button type="button" class="label-chip" [class.label-chip--selected]="form.label === 'Other'" (click)="form.label = 'Other'">📍 Other</button>
+          </div>
+        </div>
         <div class="col-12 d-flex align-items-center gap-2">
           <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="locating" (click)="useMyLocation()">
             @if (locating) {

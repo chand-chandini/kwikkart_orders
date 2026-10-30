@@ -1,0 +1,163 @@
+<div class="vpm-overlay" (click)="close()">
+  <div class="vpm-dialog" role="dialog" aria-modal="true" [attr.aria-label]="product.name" (click)="$event.stopPropagation()">
+    <div class="vpm-header">
+      <h5 class="vpm-title">{{ product.name }}</h5>
+      <button type="button" class="vpm-close" aria-label="Close" (click)="close()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="vpm-body">
+      <div class="vpm-gallery">
+        <div class="product-gallery__frame vpm-gallery__frame">
+          @if (activeImage) {
+            <img [src]="activeImage" [alt]="product.name" class="product-gallery__main" />
+          } @else {
+            <div class="product-gallery__main product-gallery__placeholder">No image</div>
+          }
+        </div>
+        @if (product.images.length > 1) {
+          <div class="vpm-thumbs">
+            @for (img of product.images; track img.id) {
+              <img
+                [src]="img.image_url"
+                class="product-gallery__thumb"
+                [class.active]="img.image_url === activeImage"
+                (click)="activeImage = img.image_url"
+                alt=""
+              />
+            }
+          </div>
+        }
+      </div>
+
+      <div class="vpm-info">
+        <div class="vpm-top">
+          @if (product.brand) {
+            <div class="vpm-brand">{{ product.brand }}</div>
+          }
+          @if (selectedOption) {
+            <div class="vpm-size-label">{{ selectedOption.name }}</div>
+          }
+
+          @if (product.rating_count) {
+            <div class="vpm-rating">
+              <span class="badge bg-success">{{ product.rating_avg }} ★</span>
+              <span class="text-muted small ms-1">{{ product.rating_count }} ratings</span>
+            </div>
+          }
+
+          <div class="vpm-price-row">
+            <span class="vpm-price">{{ effectivePrice | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            @if (effectiveMrp > effectivePrice) {
+              <span class="vpm-mrp">{{ effectiveMrp | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            }
+          </div>
+
+          @if (sizeOptions.length > 1) {
+            <div class="vpm-variants">
+              <div class="vpm-section-label">Select size / pack</div>
+              <div class="vpm-variant-grid">
+                @for (option of sizeOptions; track option.variantId) {
+                  <button
+                    type="button"
+                    class="variant-option vpm-variant"
+                    [class.variant-option--selected]="selectedOption?.variantId === option.variantId"
+                    [disabled]="!option.isAvailable || option.stockQty <= 0"
+                    (click)="selectOption(option)"
+                  >
+                    <div class="fw-semibold">{{ option.name }}</div>
+                    <div class="variant-option__price">
+                      {{ option.price | currency: 'INR' : 'symbol' : '1.0-2' }}
+                      @if (!option.isAvailable || option.stockQty <= 0) {
+                        · Out of stock
+                      }
+                    </div>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          @if (!inStock) {
+            <div class="alert alert-secondary vpm-alert mb-0">Out of stock</div>
+          }
+        </div>
+
+        @if (product.highlights.length || product.description || product.energy_kcal || product.carbs_g || product.fat_g || product.protein_g || product.storage_info || product.manufacturer_details) {
+          <div class="vpm-details">
+            @if (product.highlights.length) {
+              <div class="info-card">
+                <h6 class="fw-semibold">Highlights</h6>
+                <ul class="small text-muted mb-0">
+                  @for (h of product.highlights; track h) {
+                    <li>{{ h }}</li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (product.description) {
+              <div class="info-card">
+                <h6 class="fw-semibold">Description</h6>
+                <p class="small text-muted mb-0">{{ product.description }}</p>
+              </div>
+            }
+
+            @if (product.energy_kcal || product.carbs_g || product.fat_g || product.protein_g) {
+              <div class="info-card">
+                <h6 class="fw-semibold">Nutritional Information <span class="text-muted fw-normal">(per 100 g)</span></h6>
+                <div class="row small text-muted g-2">
+                  @if (product.energy_kcal) {
+                    <div class="col-6"><span class="text-dark fw-semibold">{{ product.energy_kcal }}</span> kcal<br />Energy</div>
+                  }
+                  @if (product.carbs_g) {
+                    <div class="col-6"><span class="text-dark fw-semibold">{{ product.carbs_g }}</span> g<br />Carbohydrates</div>
+                  }
+                  @if (product.fat_g) {
+                    <div class="col-6"><span class="text-dark fw-semibold">{{ product.fat_g }}</span> g<br />Fat</div>
+                  }
+                  @if (product.protein_g) {
+                    <div class="col-6"><span class="text-dark fw-semibold">{{ product.protein_g }}</span> g<br />Protein</div>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (product.storage_info) {
+              <div class="info-card">
+                <h6 class="fw-semibold">Storage Information</h6>
+                <p class="small text-muted mb-0">{{ product.storage_info }}</p>
+              </div>
+            }
+
+            @if (product.manufacturer_details) {
+              <div class="info-card">
+                <h6 class="fw-semibold">Manufacturer Details</h6>
+                <p class="small text-muted mb-0">{{ product.manufacturer_details }}</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="vpm-footer">
+      <app-qty-stepper class="vpm-qty" [(qty)]="qty" [disabled]="!inStock" [max]="selectedOption?.stockQty || product.stock_qty" />
+      <button
+        type="button"
+        class="btn btn-brand vpm-add-btn flex-grow-1 d-flex align-items-center justify-content-center gap-2"
+        [disabled]="!inStock || adding"
+        (click)="confirm()"
+      >
+        @if (adding) {
+          <span class="spinner-border spinner-border-sm"></span>
+        } @else {
+          Add to cart
+        }
+      </button>
+    </div>
+  </div>
+</div>

@@ -16,8 +16,8 @@
               <div class="text-muted small">{{ order.placed_at | date: 'medium' }} • {{ order.item_count }} items</div>
               <div class="text-muted small">
                 {{ order.vendors.length }} seller{{ order.vendors.length > 1 ? 's' : '' }}
-                @if (order.payment_status) {
-                  • {{ paymentLabels[order.payment_status] }}
+                @if (paymentLabel(order); as label) {
+                  • {{ label }}
                 }
               </div>
             </div>

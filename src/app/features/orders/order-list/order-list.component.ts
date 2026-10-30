@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { OrgContextService } from '../../../core/services/org-context.service';
 import { OrdersService } from '../../../core/services/orders.service';
 import { Order } from '../../../core/models/order.model';
-import { ORDER_STATUS_BADGE, ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from '../../../core/config/order-status';
+import { ORDER_STATUS_BADGE, ORDER_STATUS_LABELS, paymentDisplayLabel } from '../../../core/config/order-status';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
@@ -21,7 +21,6 @@ export class OrderListComponent implements OnInit {
 
   readonly statusLabels = ORDER_STATUS_LABELS;
   readonly statusBadge = ORDER_STATUS_BADGE;
-  readonly paymentLabels = PAYMENT_STATUS_LABELS;
 
   loading = true;
   list: Order[] = [];
@@ -42,5 +41,9 @@ export class OrderListComponent implements OnInit {
 
   detailLink(order: Order): (string | number)[] {
     return ['/o', this.orgCode, 'orders', order.parent_order_id || order.id];
+  }
+
+  paymentLabel(order: Order): string | null {
+    return paymentDisplayLabel(order.payment_method, order.payment_status);
   }
 }

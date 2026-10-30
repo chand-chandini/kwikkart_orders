@@ -18,7 +18,7 @@ const EMPTY_CART: CartState = {
 export class CartService {
   private readonly state = signal<CartState>(EMPTY_CART);
   readonly cart = this.state.asReadonly();
-  readonly itemCount = computed(() => this.state().items.reduce((sum, item) => sum + item.qty, 0));
+  readonly itemCount = computed(() => this.state().items.length);
 
   constructor(private http: HttpClient) {}
 

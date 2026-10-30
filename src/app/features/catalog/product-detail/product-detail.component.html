@@ -38,8 +38,8 @@
           <div class="text-muted">{{ product.brand }}</div>
         }
         <h2 class="fw-bold">{{ product.name }}</h2>
-        @if (product.weight_label) {
-          <div class="text-muted mb-2">{{ product.weight_label }}</div>
+        @if (selectedOption) {
+          <div class="text-muted mb-2">{{ selectedOption.name }}</div>
         }
 
         @if (product.rating_count || product.expiry_date) {
@@ -61,28 +61,26 @@
           }
         </div>
 
-        @if (product.variants.length > 1) {
+        @if (sizeOptions.length > 1) {
           <div class="mb-3">
             <div class="small text-muted mb-2">Select size / pack</div>
-            <div class="row row-cols-2 g-2">
-              @for (variant of product.variants; track variant.id) {
-                <div class="col">
-                  <button
-                    type="button"
-                    class="variant-option w-100"
-                    [class.variant-option--selected]="selectedVariant?.id === variant.id"
-                    [disabled]="!variant.is_available || variant.stock_qty <= 0"
-                    (click)="selectVariant(variant)"
-                  >
-                    <div class="fw-semibold">{{ variant.name }}</div>
-                    <div class="variant-option__price">
-                      {{ variant.price | currency: 'INR' : 'symbol' : '1.0-2' }}
-                      @if (!variant.is_available || variant.stock_qty <= 0) {
-                        · Out of stock
-                      }
-                    </div>
-                  </button>
-                </div>
+            <div class="size-option-grid">
+              @for (option of sizeOptions; track option.variantId) {
+                <button
+                  type="button"
+                  class="variant-option w-100"
+                  [class.variant-option--selected]="selectedOption?.variantId === option.variantId"
+                  [disabled]="!option.isAvailable || option.stockQty <= 0"
+                  (click)="selectOption(option)"
+                >
+                  <div class="fw-semibold">{{ option.name }}</div>
+                  <div class="variant-option__price">
+                    {{ option.price | currency: 'INR' : 'symbol' : '1.0-2' }}
+                    @if (!option.isAvailable || option.stockQty <= 0) {
+                      · Out of stock
+                    }
+                  </div>
+                </button>
               }
             </div>
           </div>
@@ -92,9 +90,9 @@
           <div class="alert alert-secondary">Out of stock</div>
         }
 
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <app-qty-stepper [(qty)]="qty" [disabled]="!inStock" [max]="selectedVariant?.stock_qty || product.stock_qty" />
-          <button class="btn btn-brand rounded-pill flex-grow-1 d-flex align-items-center justify-content-center gap-2" [disabled]="!inStock || adding" (click)="addToCart()">
+        <div class="qty-add-row mb-3">
+          <app-qty-stepper [(qty)]="qty" [disabled]="!inStock" [max]="selectedOption?.stockQty || product.stock_qty" />
+          <button class="btn btn-brand flex-grow-1 d-flex align-items-center justify-content-center gap-2" [disabled]="!inStock || adding" (click)="addToCart()">
             @if (adding) {
               <span class="spinner-border spinner-border-sm"></span>
             } @else {

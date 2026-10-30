@@ -8,7 +8,7 @@ import { CatalogService } from '../../../core/services/catalog.service';
 import { CartService } from '../../../core/services/cart.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Product, ProductDetail, ProductVariant } from '../../../core/models/product.model';
+import { Product, ProductDetail, ProductSizeOption, buildSizeOptions } from '../../../core/models/product.model';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { QtyStepperComponent } from '../../../shared/components/qty-stepper/qty-stepper.component';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
@@ -31,7 +31,8 @@ export class ProductDetailComponent implements OnInit {
   loading = true;
   product: ProductDetail | null = null;
   similar: Product[] = [];
-  selectedVariant: ProductVariant | null = null;
+  sizeOptions: ProductSizeOption[] = [];
+  selectedOption: ProductSizeOption | null = null;
   activeImage = '';
   qty = 1;
   adding = false;
@@ -42,16 +43,16 @@ export class ProductDetailComponent implements OnInit {
   }
 
   get effectivePrice(): number {
-    return this.selectedVariant?.price ?? this.product?.price ?? 0;
+    return this.selectedOption?.price ?? this.product?.price ?? 0;
   }
 
   get effectiveMrp(): number {
-    return this.selectedVariant?.mrp ?? this.product?.mrp ?? 0;
+    return this.selectedOption?.mrp ?? this.product?.mrp ?? 0;
   }
 
   get inStock(): boolean {
-    if (this.selectedVariant) {
-      return this.selectedVariant.is_available && this.selectedVariant.stock_qty > 0;
+    if (this.selectedOption) {
+      return this.selectedOption.isAvailable && this.selectedOption.stockQty > 0;
     }
     return !!this.product?.is_available && (this.product?.stock_qty ?? 0) > 0;
   }
@@ -66,7 +67,9 @@ export class ProductDetailComponent implements OnInit {
     })).subscribe({
       next: (product) => {
         this.product = product;
-        this.selectedVariant = product.variants.find((v) => v.is_available) ?? product.variants[0] ?? null;
+        this.sizeOptions = buildSizeOptions(product);
+        this.selectedOption =
+          this.sizeOptions.find((o) => o.isAvailable && o.stockQty > 0) ?? this.sizeOptions[0] ?? null;
         this.activeImage = product.image_url ?? product.images[0]?.image_url ?? '';
         this.loading = false;
         this.catalog.similarProducts(product.id).subscribe((products) => (this.similar = products));
@@ -75,8 +78,8 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
-  selectVariant(variant: ProductVariant): void {
-    this.selectedVariant = variant;
+  selectOption(option: ProductSizeOption): void {
+    this.selectedOption = option;
     this.qty = 1;
   }
 
@@ -95,7 +98,7 @@ export class ProductDetailComponent implements OnInit {
     this.cart
       .addToCart(this.product.org_id, {
         product_id: this.product.id,
-        variant_id: this.selectedVariant?.id,
+        variant_id: this.selectedOption?.variantId ?? undefined,
         qty: this.qty
       })
       .subscribe({
