@@ -14,6 +14,11 @@ export interface CartItem {
   stock_qty: number | null;
   max_qty: number;
   is_available: number;
+  // Only known once a delivery address with a map pin is selected (CartService.load's
+  // addressId) -- null/undefined until then. See kkapi utils/serviceability.js#status.
+  is_serviceable?: number | null;
+  serviceability?: string | null;
+  distance_km?: number | null;
 }
 
 export interface CartVendorGroup {

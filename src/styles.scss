@@ -74,6 +74,13 @@ a {
 }
 
 .banner-carousel {
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+
+  .carousel-inner {
+    border-radius: 20px;
+  }
+
   .carousel-control-prev,
   .carousel-control-next {
     width: 44px;
@@ -126,6 +133,53 @@ a {
   }
 }
 
+.view-all-link {
+  color: var(--kk-brand-primary);
+
+  &:hover, &:focus {
+    color: var(--kk-brand-primary-dark);
+  }
+}
+
+.subcategory-tile {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 0.82 / 1;
+  border-radius: 18px;
+  overflow: hidden;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.subcategory-tile__name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--kk-brand-text);
+  line-height: 1.2;
+}
+
+.subcategory-tile__image {
+  margin-top: auto;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px;
+  align-self: center;
+}
+
+.subcategory-tile__icon {
+  margin-top: auto;
+  align-self: center;
+  font-size: 2rem;
+}
+
 .text-truncate-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -153,7 +207,7 @@ a {
   width: 100%;
   aspect-ratio: 1 / 1;
   background: #f3f4f6;
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
 }
 
@@ -196,6 +250,59 @@ a {
   }
 }
 
+.product-gallery__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: #d9dce1;
+
+  &.active {
+    background: var(--kk-brand-primary);
+    width: 10px;
+    height: 10px;
+  }
+}
+
+// Size/pack picker on the product-detail page -- a 2-up grid of cards (name + its own price),
+// filled brand color when selected, matching the reference design instead of the old pill
+// buttons (which didn't have room to show a per-size price at a glance).
+.variant-option {
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  line-height: 1.3;
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.variant-option__price {
+  font-size: 0.8rem;
+  color: var(--kk-brand-muted);
+}
+
+.variant-option--selected {
+  background: var(--kk-brand-primary);
+  border-color: var(--kk-brand-primary);
+  color: #fff;
+
+  .variant-option__price {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+.info-card {
+  background: #fff;
+  border: 1px solid #edf0f3;
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+}
+
 .cart-item-image {
   display: block;
   width: 64px;
@@ -220,12 +327,13 @@ a {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  row-gap: 0.65rem;
+  column-gap: 0.75rem;
 }
 
 .cart-item-row__info {
   flex: 1 1 140px;
-  min-width: 140px;
+  min-width: 0;
 }
 
 .cart-item-row__actions {
@@ -235,10 +343,40 @@ a {
   margin-left: auto;
 }
 
+.cart-item-row__price {
+  min-width: 68px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cart-item-row__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #b91c1c;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled), &:focus:not(:disabled) {
+    background: rgba(185, 28, 28, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+// Below ~sm, the image+name row and the actions row (stepper/price/remove) stack full-width --
+// the actions row starts flush at the card's left edge rather than indenting under the image
+// (the old margin-left: 76px, which only ever matched a 64px image + 12px gap by coincidence
+// and broke the moment either changed), so the row reads as one clean left-to-right line.
 @media (max-width: 575.98px) {
   .cart-item-row__actions {
     flex-basis: 100%;
-    margin-left: 76px;
     justify-content: space-between;
   }
 }

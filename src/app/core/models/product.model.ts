@@ -36,11 +36,17 @@ export interface Vendor {
 
 export interface ProductVariant {
   id: number;
-  label: string;
+  name: string;
   price: number;
-  mrp: number;
+  mrp: number | null;
+  unit_price_label: string | null;
   stock_qty: number;
   is_available: boolean;
+}
+
+export interface ProductImage {
+  id: number;
+  image_url: string;
 }
 
 export interface Product {
@@ -74,8 +80,16 @@ export interface Product {
 
 export interface ProductDetail extends Product {
   variants: ProductVariant[];
-  images: string[];
+  images: ProductImage[];
   highlights: string[];
+  description: string | null;
+  storage_info: string | null;
+  manufacturer_details: string | null;
+  expiry_date: string | null;
+  energy_kcal: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  protein_g: number | null;
   is_wishlisted: boolean;
 }
 

@@ -36,7 +36,7 @@ export class CategoryComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.pipe(switchMap((params) => {
       this.categoryId = Number(params.get('categoryId'));
-      this.activeSubcategoryId = null;
+      this.activeSubcategoryId = Number(this.route.snapshot.queryParamMap.get('sub')) || null;
       this.page = 1;
       this.loading = true;
       const orgId = this.orgContext.requireOrgId();

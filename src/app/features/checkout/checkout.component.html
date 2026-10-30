@@ -21,6 +21,39 @@
               </label>
             }
 
+            @if (cartService.cart().address_location_missing) {
+              <div class="alert alert-warning small mb-2">
+                This address has no map location set, so we can't confirm delivery charges or whether it's deliverable.
+                Add a new address using "Use my current location" below, or edit this one to set its pin.
+              </div>
+            }
+
+            @if (unserviceableItems.length) {
+              <div class="alert alert-warning small mb-2">
+                <div class="fw-semibold mb-1">
+                  {{ unserviceableItems.length === 1 ? '1 item' : unserviceableItems.length + ' items' }} can't be delivered to this address
+                </div>
+                @for (item of unserviceableItems; track item.id) {
+                  <div class="d-flex align-items-center justify-content-between gap-2 py-1">
+                    <span>{{ item.name }} — {{ serviceabilityReason(item) }}</span>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      [disabled]="removingBlockedId === item.id"
+                      (click)="removeBlockedItem(item.id)"
+                    >
+                      @if (removingBlockedId === item.id) {
+                        <span class="spinner-border spinner-border-sm"></span>
+                      } @else {
+                        Remove
+                      }
+                    </button>
+                  </div>
+                }
+                <div class="text-muted mt-1">Remove {{ unserviceableItems.length === 1 ? 'it' : 'them' }}, or choose a different delivery address.</div>
+              </div>
+            }
+
             @if (!showAddressForm) {
               <button class="btn btn-outline-brand btn-sm" type="button" (click)="showAddressForm = true">+ Add new address</button>
             } @else {
@@ -123,12 +156,22 @@
               <span>Total payable</span>
               <span>{{ cartService.cart().grand_total - couponDiscount | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
             </div>
-            <button class="btn btn-brand w-100" [disabled]="placing || !selectedAddressId" (click)="placeOrder()">
+            @if (checkoutError) {
+              <div class="alert alert-danger small">{{ checkoutError }}</div>
+            }
+            <button
+              class="btn btn-brand w-100"
+              [disabled]="placing || !selectedAddressId || unserviceableItems.length > 0"
+              (click)="placeOrder()"
+            >
               @if (placing) {
                 <span class="spinner-border spinner-border-sm me-2"></span>
               }
               Place order
             </button>
+            @if (!placing && unserviceableItems.length > 0) {
+              <div class="text-danger small mt-2">Remove the items that can't be delivered here to continue.</div>
+            }
           </div>
         </div>
       </div>

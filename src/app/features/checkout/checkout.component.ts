@@ -10,8 +10,21 @@ import { PaymentsService } from '../../core/services/payments.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Address, AddressPayload } from '../../core/models/address.model';
+import { CartItem } from '../../core/models/cart.model';
 import { DeliverySlot, PaymentMethod } from '../../core/models/order.model';
+import { AppError } from '../../core/models/api-error.model';
 import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
+
+// Mirrors kkapi public_app/utils/serviceability.js#message -- same reasons, same phrasing style.
+const SERVICEABILITY_MESSAGES: Record<string, string> = {
+  out_of_range: "it's outside the delivery area",
+  no_store_location: "the store hasn't set its location yet",
+  no_delivery_radius: "the seller hasn't set a delivery area yet"
+};
+
+function serviceabilityMessage(reason: string | null | undefined): string {
+  return SERVICEABILITY_MESSAGES[reason ?? ''] ?? "it isn't deliverable here";
+}
 
 const EMPTY_ADDRESS: AddressPayload = {
   contact_name: '',
@@ -58,8 +71,27 @@ export class CheckoutComponent implements OnInit {
   newAddress: AddressPayload = { ...EMPTY_ADDRESS };
   locating = false;
 
+  // Surfaced from placeOrder's 400 (not_serviceable / address_location_required /
+  // insufficient_stock / out_of_stock) -- these are in the error interceptor's SILENT_CODES set
+  // specifically so this component can show them inline instead of a generic toast; previously
+  // nothing here did, so placeOrder appeared to just silently fail for a blocked address.
+  checkoutError: string | null = null;
+  blockedItemIds = new Set<number>();
+  removingBlockedId: number | null = null;
+
   get orgCode(): string {
     return this.orgContext.getCurrentCode() ?? '';
+  }
+
+  // Pre-emptive warning, shown as soon as an address is selected (its coords come back on the
+  // cart annotated per item) -- so the buyer finds out an item can't be delivered before
+  // attempting to place the order, not only after a blocked 400.
+  get unserviceableItems(): CartItem[] {
+    return this.cartService.cart().items.filter((item) => item.is_serviceable === 0);
+  }
+
+  serviceabilityReason(item: CartItem): string {
+    return serviceabilityMessage(item.serviceability);
   }
 
   get codEnabled(): boolean {
@@ -93,6 +125,8 @@ export class CheckoutComponent implements OnInit {
 
   selectAddress(id: number): void {
     this.selectedAddressId = id;
+    this.checkoutError = null;
+    this.blockedItemIds = new Set();
     this.cartService.load(this.orgContext.requireOrgId(), id).subscribe();
   }
 
@@ -142,6 +176,8 @@ export class CheckoutComponent implements OnInit {
       this.toast.error('Please select or add a delivery address.');
       return;
     }
+    this.checkoutError = null;
+    this.blockedItemIds = new Set();
     this.placing = true;
     this.checkout
       .placeOrder({
@@ -161,8 +197,59 @@ export class CheckoutComponent implements OnInit {
           }
           this.payOnline(result);
         },
-        error: () => (this.placing = false)
+        error: (err: AppError) => {
+          this.placing = false;
+          this.handlePlaceOrderError(err);
+        }
       });
+  }
+
+  // not_serviceable / address_location_required / insufficient_stock / out_of_stock all arrive
+  // here (the interceptor deliberately skips the global toast for these -- see SILENT_CODES).
+  // Anything else was already toasted globally; nothing further to do for it here.
+  private handlePlaceOrderError(err: AppError): void {
+    switch (err.code) {
+      case 'not_serviceable': {
+        this.checkoutError = err.message;
+        const items = (err.raw as { items?: { cart_item_id: number }[] })?.items ?? [];
+        this.blockedItemIds = new Set(items.map((i) => i.cart_item_id));
+        // Re-pull the cart WITH the address so is_serviceable on each item matches what the
+        // backend just refused -- unserviceableItems then renders the same items this came back
+        // with, instead of relying on blockedItemIds as a second, separately-displayed list.
+        this.cartService.load(this.orgContext.requireOrgId(), this.selectedAddressId ?? undefined).subscribe();
+        break;
+      }
+      case 'address_location_required':
+        this.checkoutError = err.message;
+        break;
+      case 'insufficient_stock':
+      case 'out_of_stock':
+        this.checkoutError = err.message;
+        // Stock changed server-side since the page loaded -- resync so qty/availability reflect it.
+        this.cartService.load(this.orgContext.requireOrgId(), this.selectedAddressId ?? undefined).subscribe();
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Lets the buyer clear a blocked item right from the warning instead of bouncing back to the
+  // cart page -- re-loaded WITH the selected address so the remaining items keep their
+  // serviceability annotation (CartService.removeItem's own reload omits address_id).
+  removeBlockedItem(itemId: number): void {
+    this.removingBlockedId = itemId;
+    this.cartService.removeItem(this.orgContext.requireOrgId(), itemId).subscribe({
+      next: () => {
+        this.cartService.load(this.orgContext.requireOrgId(), this.selectedAddressId ?? undefined).subscribe(() => {
+          this.removingBlockedId = null;
+          this.blockedItemIds.delete(itemId);
+          if (this.blockedItemIds.size === 0) {
+            this.checkoutError = null;
+          }
+        });
+      },
+      error: () => (this.removingBlockedId = null)
+    });
   }
 
   private payOnline(result: { parent_order_id: number; rzp_order_id?: string; key_id?: string; amount?: number }): void {

@@ -67,7 +67,7 @@ export class ProductDetailComponent implements OnInit {
       next: (product) => {
         this.product = product;
         this.selectedVariant = product.variants.find((v) => v.is_available) ?? product.variants[0] ?? null;
-        this.activeImage = product.image_url ?? product.images[0] ?? '';
+        this.activeImage = product.image_url ?? product.images[0]?.image_url ?? '';
         this.loading = false;
         this.catalog.similarProducts(product.id).subscribe((products) => (this.similar = products));
       },

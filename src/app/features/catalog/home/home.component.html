@@ -37,24 +37,47 @@
       </div>
     }
 
-    @if (categories.length) {
-      <h5 class="fw-bold mb-3">Shop by category</h5>
-      <div class="row g-3 mb-4">
-        @for (category of categories; track category.id) {
-          <div class="col-4 col-sm-3 col-md-2">
-            <a [routerLink]="['/o', orgCode, 'c', category.id]" class="text-decoration-none text-reset d-flex flex-column align-items-center gap-2">
-              <div class="category-tile" [style.background]="category.tint_color || '#f3f4f6'">
-                @if (category.image_url) {
-                  <img [src]="category.image_url" [alt]="category.name" />
+    @for (section of categorySections; track section.category.id) {
+      @if (section.subcategories.length) {
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold fst-italic mb-0">{{ section.category.name }}</h5>
+          <a [routerLink]="['/o', orgCode, 'c', section.category.id]" class="view-all-link small fw-semibold text-decoration-none flex-shrink-0">
+            View all <span aria-hidden="true">›</span>
+          </a>
+        </div>
+        <div class="row g-3 mb-4">
+          @for (tile of section.subcategories; track tile.sub.id) {
+            <div class="col-4 col-sm-3 col-md-2">
+              <a
+                [routerLink]="['/o', orgCode, 'c', section.category.id]"
+                [queryParams]="{ sub: tile.sub.id }"
+                class="subcategory-tile text-decoration-none text-reset d-block"
+                [style.background]="tile.color"
+              >
+                <span class="subcategory-tile__name text-truncate-2">{{ tile.sub.name }}</span>
+                @if (tile.sub.image_url) {
+                  <img [src]="tile.sub.image_url" [alt]="tile.sub.name" class="subcategory-tile__image" />
                 } @else {
-                  <span class="fs-3">{{ category.icon || '🛍️' }}</span>
+                  <span class="subcategory-tile__icon">{{ section.category.icon || '🛍️' }}</span>
                 }
-              </div>
-              <span class="small text-center text-truncate-2">{{ category.name }}</span>
-            </a>
-          </div>
-        }
-      </div>
+              </a>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="col-4 col-sm-3 col-md-2 mb-4">
+          <a [routerLink]="['/o', orgCode, 'c', section.category.id]" class="text-decoration-none text-reset d-flex flex-column align-items-center gap-2">
+            <div class="category-tile" [style.background]="section.category.tint_color || '#f3f4f6'">
+              @if (section.category.image_url) {
+                <img [src]="section.category.image_url" [alt]="section.category.name" />
+              } @else {
+                <span class="fs-3">{{ section.category.icon || '🛍️' }}</span>
+              }
+            </div>
+            <span class="small text-center text-truncate-2">{{ section.category.name }}</span>
+          </a>
+        </div>
+      }
     }
 
     <h5 class="fw-bold mb-3">Popular products</h5>
