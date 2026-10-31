@@ -19,8 +19,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
       const body = err.error ?? {};
+      // A 401 only means "the session died" when the request actually carried our token --
+      // auth.interceptor only attaches one once a session exists. Pre-login calls like
+      // verify_otp also answer 401 for a plain wrong code, which isn't a session problem at
+      // all (there's no session yet), so treating every 401 as a forced logout+redirect wiped
+      // the user back to the mobile-entry screen before they ever saw why.
+      const hadSessionToken = req.headers.has('Authorization');
 
-      if (err.status === 401) {
+      if (err.status === 401 && hadSessionToken) {
         auth.logout();
         const orgCode = router.url.match(/\/o\/([^/]+)/)?.[1];
         if (orgCode) {
@@ -35,7 +41,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         raw: body
       };
 
-      if (err.status !== 401 && !SILENT_CODES.has(String(appError.code))) {
+      if (!(err.status === 401 && hadSessionToken) && !SILENT_CODES.has(String(appError.code))) {
         toast.error(appError.message);
       }
 

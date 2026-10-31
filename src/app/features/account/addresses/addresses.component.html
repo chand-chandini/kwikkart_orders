@@ -10,41 +10,102 @@
     <app-spinner label="Loading addresses..." />
   } @else {
     @if (showForm) {
-      <form class="card card-body mb-4 row g-2" (ngSubmit)="save()">
-        <div class="col-6"><input class="form-control" placeholder="Full name" [(ngModel)]="form.contact_name" name="contact_name" required /></div>
-        <div class="col-6"><input class="form-control" placeholder="Phone" [(ngModel)]="form.contact_phone" name="contact_phone" required /></div>
-        <div class="col-12"><input class="form-control" placeholder="House no / Flat" [(ngModel)]="form.house_no" name="house_no" /></div>
-        <div class="col-12"><input class="form-control" placeholder="Address line" [(ngModel)]="form.address_line" name="address_line" required /></div>
-        <div class="col-4"><input class="form-control" placeholder="City" [(ngModel)]="form.city" name="city" required /></div>
-        <div class="col-4"><input class="form-control" placeholder="State" [(ngModel)]="form.state" name="state" required /></div>
-        <div class="col-4"><input class="form-control" placeholder="Pincode" [(ngModel)]="form.pincode" name="pincode" required /></div>
-        <div class="col-12"><input class="form-control" placeholder="Landmark (optional)" [(ngModel)]="form.landmark" name="landmark" /></div>
-        <div class="col-12">
-          <div class="small text-muted mb-1">Save address as</div>
-          <div class="label-chip-group">
-            <button type="button" class="label-chip" [class.label-chip--selected]="form.label === 'Home'" (click)="form.label = 'Home'">🏠 Home</button>
-            <button type="button" class="label-chip" [class.label-chip--selected]="form.label === 'Work'" (click)="form.label = 'Work'">💼 Work</button>
-            <button type="button" class="label-chip" [class.label-chip--selected]="form.label === 'Other'" (click)="form.label = 'Other'">📍 Other</button>
+      <form class="card card-body mb-4" (ngSubmit)="save()">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label small text-muted" for="contact_name">Full name</label>
+            <input id="contact_name" class="form-control" placeholder="Full name" [(ngModel)]="form.contact_name" name="contact_name" required />
           </div>
-        </div>
-        <div class="col-12 d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="locating" (click)="useMyLocation()">
-            @if (locating) {
-              <span class="spinner-border spinner-border-sm me-1"></span>
-            }
-            📍 Use my current location
-          </button>
-          @if (form.latitude) {
-            <span class="small text-success">Location captured ✓</span>
+          <div class="col-sm-6">
+            <label class="form-label small text-muted" for="contact_phone">Phone number</label>
+            <input
+              id="contact_phone"
+              class="form-control"
+              type="tel"
+              inputmode="numeric"
+              maxlength="10"
+              placeholder="10-digit mobile number"
+              [(ngModel)]="form.contact_phone"
+              name="contact_phone"
+              required
+            />
+          </div>
+          <div class="col-12">
+            <label class="form-label small text-muted" for="house_no">House no / Flat</label>
+            <input id="house_no" class="form-control" placeholder="House no / Flat" [(ngModel)]="form.house_no" name="house_no" />
+          </div>
+          <div class="col-12">
+            <label class="form-label small text-muted" for="address_line">Address line</label>
+            <input id="address_line" class="form-control" placeholder="Street, area" [(ngModel)]="form.address_line" name="address_line" required />
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label small text-muted" for="city">City</label>
+            <input id="city" class="form-control" placeholder="City" [(ngModel)]="form.city" name="city" required />
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label small text-muted" for="state">State</label>
+            <input id="state" class="form-control" placeholder="State" [(ngModel)]="form.state" name="state" required />
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label small text-muted" for="pincode">Pincode</label>
+            <input
+              id="pincode"
+              class="form-control"
+              type="text"
+              inputmode="numeric"
+              maxlength="6"
+              placeholder="6-digit pincode"
+              [(ngModel)]="form.pincode"
+              name="pincode"
+              required
+            />
+          </div>
+          <div class="col-12">
+            <label class="form-label small text-muted" for="landmark">Landmark (optional)</label>
+            <input id="landmark" class="form-control" placeholder="Landmark (optional)" [(ngModel)]="form.landmark" name="landmark" />
+          </div>
+
+          <div class="col-12">
+            <div class="small text-muted mb-1">Save address as</div>
+            <div class="label-chip-group">
+              <button type="button" class="label-chip" [class.label-chip--selected]="form.label === 'Home'" (click)="form.label = 'Home'">🏠 Home</button>
+              <button type="button" class="label-chip" [class.label-chip--selected]="form.label === 'Work'" (click)="form.label = 'Work'">💼 Work</button>
+              <button type="button" class="label-chip" [class.label-chip--selected]="form.label === 'Other'" (click)="form.label = 'Other'">📍 Other</button>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="locating" (click)="useMyLocation()">
+                @if (locating) {
+                  <span class="spinner-border spinner-border-sm me-1"></span>
+                }
+                📍 Use my current location
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" type="button" (click)="showLocationPicker = true">
+                🗺️ Choose on map
+              </button>
+              @if (form.latitude) {
+                <span class="small text-success">Location captured ✓</span>
+              }
+            </div>
+            <div class="small text-muted mt-1">
+              Setting a map pin confirms delivery charges and whether this address can be delivered to -- searching or picking a spot also fills in the address/city/state/pincode below.
+            </div>
+          </div>
+
+          @if (formError) {
+            <div class="col-12"><div class="alert alert-warning small mb-0">{{ formError }}</div></div>
           }
-        </div>
-        <div class="col-12 form-check">
-          <input class="form-check-input" type="checkbox" [(ngModel)]="form.is_default" name="is_default" id="isDefault" />
-          <label class="form-check-label" for="isDefault">Set as default address</label>
-        </div>
-        <div class="col-12 d-flex gap-2 mt-2">
-          <button class="btn btn-brand" type="submit">Save</button>
-          <button class="btn btn-link" type="button" (click)="showForm = false">Cancel</button>
+
+          <div class="col-12 form-check">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="form.is_default" name="is_default" id="isDefault" />
+            <label class="form-check-label" for="isDefault">Set as default address</label>
+          </div>
+          <div class="col-12 d-flex gap-2 mt-2">
+            <button class="btn btn-brand" type="submit">Save</button>
+            <button class="btn btn-link" type="button" (click)="showForm = false">Cancel</button>
+          </div>
         </div>
       </form>
     }
@@ -72,3 +133,12 @@
     }
   }
 </div>
+
+@if (showLocationPicker) {
+  <app-location-picker-modal
+    [initialLat]="form.latitude"
+    [initialLng]="form.longitude"
+    (closed)="showLocationPicker = false"
+    (picked)="onLocationPicked($event)"
+  />
+}

@@ -1,0 +1,53 @@
+:host {
+  display: block;
+}
+
+.landing-bg {
+  min-height: 100vh;
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--kk-brand-bg);
+  background-image: url('/assets/auth-bg.png');
+  background-size: cover;
+  // The banner's own artwork sits left/right with empty space in the middle -- on a narrow phone
+  // "cover" crops in tight, so anchor it slightly left so the produce/cart illustration stays in
+  // frame instead of just showing the plain middle.
+  background-position: left center;
+  background-repeat: no-repeat;
+
+  @media (min-width: 768px) {
+    background-position: center;
+  }
+}
+
+// Resend OTP / Change number -- previously two stacked full-width btn-link buttons, which
+// rendered as plain, left-aligned blue-link text stretched across the card. A single centered
+// row of brand-colored text actions reads as deliberate secondary actions instead.
+.auth-otp-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.auth-otp-actions__btn {
+  border: none;
+  background: none;
+  padding: 0.2rem 0.1rem;
+  color: var(--kk-brand-primary);
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover, &:focus {
+    color: var(--kk-brand-primary-dark);
+    text-decoration: underline;
+  }
+}
+
+.auth-otp-actions__dot {
+  color: var(--kk-brand-muted);
+  font-size: 0.75rem;
+}

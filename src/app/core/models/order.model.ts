@@ -1,3 +1,5 @@
+import { Address } from './address.model';
+
 export type PaymentMethod = 'cod' | 'online';
 
 export interface OrderCreateRequest {
@@ -72,6 +74,20 @@ export interface OrderLineItem {
   line_total: number;
 }
 
+// Mirrors utils/orderModification.js#paymentSummary — attached per vendor order, and (for a
+// multi-vendor checkout) summed across them onto the parent order.
+export interface PaymentSummary {
+  original_amount: number;
+  revised_amount: number;
+  remaining_amount: number;
+  wallet_amount: number;
+  online_amount: number;
+  amount_paid: number;
+  payable_on_delivery: number;
+  credit_due: number;
+  wallet_credit_amount: number;
+}
+
 export interface ParentOrderVendorEntry {
   id: number;
   order_number: string;
@@ -83,17 +99,22 @@ export interface ParentOrderVendorEntry {
   grand_total: number;
   items: OrderLineItem[];
   payment_method: string;
+  payment_summary: PaymentSummary;
 }
 
 export interface ParentOrder {
   id: number;
   order_number: string;
+  items_total: number;
+  discount_amount: number;
+  delivery_charge: number;
+  handling_charge: number;
   grand_total: number;
   payment_status: number;
   payment_method: PaymentMethod;
   vendor_orders: ParentOrderVendorEntry[];
-  payment_summary: unknown;
-  address: unknown;
+  payment_summary: PaymentSummary;
+  address: Address | null;
 }
 
 export interface OrderDetail {
@@ -106,8 +127,9 @@ export interface OrderDetail {
   grand_total: number;
   placed_at: string;
   payment_method: string;
+  payment_summary: PaymentSummary;
   items: OrderLineItem[];
-  address: unknown;
+  address: Address | null;
 }
 
 export interface DeliverySlot {

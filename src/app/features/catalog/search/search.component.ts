@@ -1,6 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { switchMap } from 'rxjs';
 
 import { OrgContextService } from '../../../core/services/org-context.service';
@@ -13,14 +12,13 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [FormsModule, ProductCardComponent, SpinnerComponent, EmptyStateComponent],
+  imports: [ProductCardComponent, SpinnerComponent, EmptyStateComponent],
   templateUrl: './search.component.html'
 })
 export class SearchComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly orgContext = inject(OrgContextService);
   private readonly catalog = inject(CatalogService);
-  private readonly router = inject(Router);
 
   query = '';
   loading = true;
@@ -43,9 +41,5 @@ export class SearchComponent implements OnInit {
       },
       error: () => (this.loading = false)
     });
-  }
-
-  submitSearch(): void {
-    this.router.navigate([], { relativeTo: this.route, queryParams: { q: this.query.trim() || null } });
   }
 }

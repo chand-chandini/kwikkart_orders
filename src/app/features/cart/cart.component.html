@@ -12,7 +12,6 @@
       <div class="col-12 col-lg-8">
         @for (vendor of cartService.cart().vendors; track vendor.vendor_id) {
           <div class="card mb-3">
-            <div class="card-header bg-white fw-semibold">{{ vendor.vendor_name }}</div>
             <div class="card-body p-0">
               @for (item of itemsForVendor(vendor); track item.id) {
                 <div class="cart-item-row p-3 border-bottom">

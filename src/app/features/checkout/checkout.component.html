@@ -55,39 +55,100 @@
             }
 
             @if (!showAddressForm) {
-              <button class="btn btn-outline-brand btn-sm" type="button" (click)="showAddressForm = true">+ Add new address</button>
+              <button class="btn btn-outline-brand btn-sm" type="button" (click)="showAddressForm = true; addressFormError = null">+ Add new address</button>
             } @else {
-              <form class="row g-2 mt-2" (ngSubmit)="saveAddress()">
-                <div class="col-6"><input class="form-control" placeholder="Full name" [(ngModel)]="newAddress.contact_name" name="contact_name" required /></div>
-                <div class="col-6"><input class="form-control" placeholder="Phone" [(ngModel)]="newAddress.contact_phone" name="contact_phone" required /></div>
-                <div class="col-12"><input class="form-control" placeholder="House no / Flat" [(ngModel)]="newAddress.house_no" name="house_no" /></div>
-                <div class="col-12"><input class="form-control" placeholder="Address line" [(ngModel)]="newAddress.address_line" name="address_line" required /></div>
-                <div class="col-4"><input class="form-control" placeholder="City" [(ngModel)]="newAddress.city" name="city" required /></div>
-                <div class="col-4"><input class="form-control" placeholder="State" [(ngModel)]="newAddress.state" name="state" required /></div>
-                <div class="col-4"><input class="form-control" placeholder="Pincode" [(ngModel)]="newAddress.pincode" name="pincode" required /></div>
-                <div class="col-12"><input class="form-control" placeholder="Landmark (optional)" [(ngModel)]="newAddress.landmark" name="landmark" /></div>
-                <div class="col-12 d-flex align-items-center gap-2">
-                  <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="locating" (click)="useMyLocation()">
-                    @if (locating) {
-                      <span class="spinner-border spinner-border-sm me-1"></span>
-                    }
-                    📍 Use my current location
-                  </button>
-                  @if (newAddress.latitude) {
-                    <span class="small text-success">Location captured ✓</span>
-                  }
-                </div>
-                <div class="col-12">
-                  <div class="small text-muted mb-1">Save address as</div>
-                  <div class="label-chip-group">
-                    <button type="button" class="label-chip" [class.label-chip--selected]="newAddress.label === 'Home'" (click)="newAddress.label = 'Home'">🏠 Home</button>
-                    <button type="button" class="label-chip" [class.label-chip--selected]="newAddress.label === 'Work'" (click)="newAddress.label = 'Work'">💼 Work</button>
-                    <button type="button" class="label-chip" [class.label-chip--selected]="newAddress.label === 'Other'" (click)="newAddress.label = 'Other'">📍 Other</button>
+              <form class="mt-2" (ngSubmit)="saveAddress()">
+                <div class="row g-3">
+                  <div class="col-sm-6">
+                    <label class="form-label small text-muted" for="co_contact_name">Full name</label>
+                    <input id="co_contact_name" class="form-control" placeholder="Full name" [(ngModel)]="newAddress.contact_name" name="contact_name" required />
                   </div>
-                </div>
-                <div class="col-12 d-flex gap-2 mt-2">
-                  <button class="btn btn-brand" type="submit">Save address</button>
-                  <button class="btn btn-link" type="button" (click)="showAddressForm = false">Cancel</button>
+                  <div class="col-sm-6">
+                    <label class="form-label small text-muted" for="co_contact_phone">Phone number</label>
+                    <input
+                      id="co_contact_phone"
+                      class="form-control"
+                      type="tel"
+                      inputmode="numeric"
+                      maxlength="10"
+                      placeholder="10-digit mobile number"
+                      [(ngModel)]="newAddress.contact_phone"
+                      name="contact_phone"
+                      required
+                    />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small text-muted" for="co_house_no">House no / Flat</label>
+                    <input id="co_house_no" class="form-control" placeholder="House no / Flat" [(ngModel)]="newAddress.house_no" name="house_no" />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small text-muted" for="co_address_line">Address line</label>
+                    <input id="co_address_line" class="form-control" placeholder="Street, area" [(ngModel)]="newAddress.address_line" name="address_line" required />
+                  </div>
+                  <div class="col-sm-4">
+                    <label class="form-label small text-muted" for="co_city">City</label>
+                    <input id="co_city" class="form-control" placeholder="City" [(ngModel)]="newAddress.city" name="city" required />
+                  </div>
+                  <div class="col-sm-4">
+                    <label class="form-label small text-muted" for="co_state">State</label>
+                    <input id="co_state" class="form-control" placeholder="State" [(ngModel)]="newAddress.state" name="state" required />
+                  </div>
+                  <div class="col-sm-4">
+                    <label class="form-label small text-muted" for="co_pincode">Pincode</label>
+                    <input
+                      id="co_pincode"
+                      class="form-control"
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="6"
+                      placeholder="6-digit pincode"
+                      [(ngModel)]="newAddress.pincode"
+                      name="pincode"
+                      required
+                    />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small text-muted" for="co_landmark">Landmark (optional)</label>
+                    <input id="co_landmark" class="form-control" placeholder="Landmark (optional)" [(ngModel)]="newAddress.landmark" name="landmark" />
+                  </div>
+
+                  <div class="col-12">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="locating" (click)="useMyLocation()">
+                        @if (locating) {
+                          <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        📍 Use my current location
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary" type="button" (click)="showLocationPicker = true">
+                        🗺️ Choose on map
+                      </button>
+                      @if (newAddress.latitude) {
+                        <span class="small text-success">Location captured ✓</span>
+                      }
+                    </div>
+                    <div class="small text-muted mt-1">
+                      Setting a map pin confirms delivery charges and whether this address can be delivered to -- searching or picking a spot also fills in the address/city/state/pincode below.
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="small text-muted mb-1">Save address as</div>
+                    <div class="label-chip-group">
+                      <button type="button" class="label-chip" [class.label-chip--selected]="newAddress.label === 'Home'" (click)="newAddress.label = 'Home'">🏠 Home</button>
+                      <button type="button" class="label-chip" [class.label-chip--selected]="newAddress.label === 'Work'" (click)="newAddress.label = 'Work'">💼 Work</button>
+                      <button type="button" class="label-chip" [class.label-chip--selected]="newAddress.label === 'Other'" (click)="newAddress.label = 'Other'">📍 Other</button>
+                    </div>
+                  </div>
+
+                  @if (addressFormError) {
+                    <div class="col-12"><div class="alert alert-warning small mb-0">{{ addressFormError }}</div></div>
+                  }
+
+                  <div class="col-12 d-flex gap-2 mt-2">
+                    <button class="btn btn-brand" type="submit">Save address</button>
+                    <button class="btn btn-link" type="button" (click)="showAddressForm = false; addressFormError = null">Cancel</button>
+                  </div>
                 </div>
               </form>
             }
@@ -192,4 +253,13 @@
       </div>
     </div>
   </div>
+
+  @if (showLocationPicker) {
+    <app-location-picker-modal
+      [initialLat]="newAddress.latitude"
+      [initialLng]="newAddress.longitude"
+      (closed)="showLocationPicker = false"
+      (picked)="onLocationPicked($event)"
+    />
+  }
 }

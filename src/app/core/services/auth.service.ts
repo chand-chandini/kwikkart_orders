@@ -75,9 +75,12 @@ export class AuthService {
       );
   }
 
+  // /ecommerce/join, not the generic /roles/redeem -- same membership outcome, but doesn't
+  // refuse an account that happens to run a vendor profile elsewhere (OrgShellComponent calls
+  // this to silently join the /o/{code} link's org as a customer; see kkapi ecommerceCtrl.joinAsCustomer).
   redeemCode(code: string): Observable<RedeemCodeResponse> {
     return this.http
-      .post<{ data: RedeemCodeResponse }>(`${environment.apiBaseUrl}/roles/redeem`, { code })
+      .post<{ data: RedeemCodeResponse }>(`${environment.apiBaseUrl}/ecommerce/join`, { code })
       .pipe(
         map((res) => res.data),
         tap((data) =>

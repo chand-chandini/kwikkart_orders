@@ -1,0 +1,57 @@
+<div class="lpm-overlay" (click)="close()">
+  <div class="lpm-dialog" role="dialog" aria-modal="true" aria-label="Choose location on map" (click)="$event.stopPropagation()">
+    <div class="lpm-header">
+      <h5 class="lpm-title">Choose location on map</h5>
+      <button type="button" class="lpm-close" aria-label="Close" (click)="close()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    @if (loadError) {
+      <div class="lpm-body">
+        <div class="alert alert-warning mb-0">{{ loadErrorMessage || 'Could not load Google Maps. Please check your connection and try again.' }}</div>
+      </div>
+    } @else {
+      <div class="lpm-search">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m21 21-3.8-3.8" />
+        </svg>
+        <input #searchInput class="lpm-search-input" type="text" placeholder="Search for a city, area or landmark..." />
+      </div>
+
+      <div class="lpm-map-wrap">
+        <div #mapEl class="lpm-map"></div>
+        @if (loading) {
+          <div class="lpm-map-loading">
+            <span class="spinner-border spinner-border-sm"></span>
+          </div>
+        }
+      </div>
+
+      <div class="lpm-footer">
+        @if (selected) {
+          <div class="lpm-selected small">
+            <div class="fw-semibold">{{ selected.address_line }}</div>
+            <div class="text-muted">
+              {{ selected.city }}
+              @if (selected.state) { <span>, {{ selected.state }}</span> }
+              @if (selected.pincode) { <span> - {{ selected.pincode }}</span> }
+            </div>
+          </div>
+        } @else {
+          <div class="lpm-selected small text-muted">
+            @if (resolving) {
+              Resolving address...
+            } @else {
+              Search above or tap the map to drop a pin.
+            }
+          </div>
+        }
+        <button type="button" class="btn btn-brand" [disabled]="!selected || resolving" (click)="confirm()">Confirm this location</button>
+      </div>
+    }
+  </div>
+</div>

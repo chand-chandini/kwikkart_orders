@@ -26,22 +26,33 @@
         <span class="text-muted small text-decoration-line-through">{{ product.mrp | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
       }
     </div>
-    <button
-      type="button"
-      class="btn btn-sm mt-auto mt-2"
-      [class.btn-outline-brand]="!added"
-      [class.btn-success]="added"
-      [disabled]="adding || !product.is_available || product.stock_qty <= 0"
-      (click)="quickAdd($event)"
-    >
-      @if (adding) {
-        <span class="spinner-border spinner-border-sm"></span>
-      } @else if (added) {
-        Added ✓
-      } @else {
-        Add to cart
-      }
-    </button>
+    @if (singleCartItem) {
+      <div class="mt-auto mt-2" (click)="$event.preventDefault(); $event.stopPropagation()">
+        <app-qty-stepper
+          [qty]="singleCartItem.qty"
+          [min]="0"
+          [max]="product.stock_qty"
+          [disabled]="updatingQty"
+          [compact]="true"
+          (qtyChange)="onCartQtyChange($event)"
+        />
+      </div>
+    } @else {
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-brand mt-auto mt-2"
+        [disabled]="adding || !product.is_available || product.stock_qty <= 0"
+        (click)="quickAdd($event)"
+      >
+        @if (adding) {
+          <span class="spinner-border spinner-border-sm"></span>
+        } @else if (cartMatches.length > 1) {
+          In cart
+        } @else {
+          Add to cart
+        }
+      </button>
+    }
   </div>
 </a>
 

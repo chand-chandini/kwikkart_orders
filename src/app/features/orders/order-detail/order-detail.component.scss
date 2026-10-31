@@ -1,0 +1,91 @@
+.order-detail-id {
+  color: var(--kk-brand-muted);
+  font-size: 0.9rem;
+}
+
+.order-detail-store-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--kk-brand-bg);
+  color: var(--kk-brand-primary);
+  flex-shrink: 0;
+}
+
+.order-detail-item + .order-detail-item {
+  border-top: 1px solid #f3f4f6;
+}
+
+.order-detail-bill {
+  border-top: 1px solid #edf0f3;
+  font-size: 0.92rem;
+}
+
+.order-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+
+  &--last {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.order-detail-row__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--kk-brand-primary);
+}
+
+.order-detail-row__label {
+  color: var(--kk-brand-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.order-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.order-status-pill--placed {
+  background: #e7f6ec;
+  color: #1e8a4c;
+}
+
+.order-status-pill--confirmed {
+  background: #e6edfc;
+  color: #1d4ed8;
+}
+
+.order-status-pill--packed {
+  background: #eaf3ff;
+  color: #0b7285;
+}
+
+.order-status-pill--delivered {
+  background: #e7f6ec;
+  color: #15803d;
+}
+
+.order-status-pill--cancelled {
+  background: #fdecea;
+  color: #b91c1c;
+}

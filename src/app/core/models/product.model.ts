@@ -57,6 +57,9 @@ export interface Product {
   subcategory_id: number;
   name: string;
   brand: string | null;
+  // Only present where the query joins vendors_t (product detail, similar products) -- plain
+  // catalog listings don't carry it.
+  vendor_name?: string;
   product_code: string | null;
   master_product_id: number | null;
   weight_label: string | null;

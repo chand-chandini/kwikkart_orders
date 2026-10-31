@@ -4,7 +4,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   selector: 'app-qty-stepper',
   standalone: true,
   template: `
-    <div class="qty-pill" [class.qty-pill--disabled]="disabled">
+    <div class="qty-pill" [class.qty-pill--disabled]="disabled" [class.qty-pill--compact]="compact">
       <button type="button" class="qty-pill__btn" [disabled]="disabled || qty <= min" (click)="change(-1)" aria-label="Decrease quantity">−</button>
       <span class="qty-pill__value">{{ qty }}</span>
       <button type="button" class="qty-pill__btn" [disabled]="disabled || qty >= max" (click)="change(1)" aria-label="Increase quantity">+</button>
@@ -27,6 +27,23 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 
     .qty-pill--disabled {
       opacity: 0.6;
+    }
+
+    // Matches Bootstrap's btn-sm height (~31px) for spots like the product card where the
+    // stepper sits in place of a btn-sm "Add to cart" button -- the default 44px pill made the
+    // +/- buttons noticeably taller than that button, reading as extra top/bottom padding.
+    .qty-pill--compact {
+      height: 31px;
+    }
+
+    .qty-pill--compact .qty-pill__btn {
+      width: 1.9rem;
+      font-size: 0.95rem;
+    }
+
+    .qty-pill--compact .qty-pill__value {
+      min-width: 1.5rem;
+      font-size: 0.85rem;
     }
 
     .qty-pill__btn {
@@ -68,6 +85,7 @@ export class QtyStepperComponent {
   @Input() min = 1;
   @Input() max = 99;
   @Input() disabled = false;
+  @Input() compact = false;
   @Output() qtyChange = new EventEmitter<number>();
 
   change(delta: number): void {

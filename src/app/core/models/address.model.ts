@@ -15,3 +15,15 @@ export interface Address {
 }
 
 export type AddressPayload = Omit<Address, 'id'>;
+
+// What app-location-picker-modal emits once a spot on the map is confirmed -- a subset of
+// AddressPayload the map can actually derive (house_no/landmark/contact details/label still need
+// the person to type them).
+export interface PickedLocation {
+  address_line: string;
+  city: string;
+  state: string;
+  pincode: string;
+  latitude: number;
+  longitude: number;
+}

@@ -1,25 +1,55 @@
 @if (loading) {
   <app-spinner label="Confirming your order..." />
 } @else {
-  <div class="container py-5 text-center" style="max-width: 560px;">
-    <div class="fs-1 mb-3">✅</div>
-    <h2 class="fw-bold">Order placed successfully!</h2>
-    @if (order) {
-      <p class="text-muted">Order #{{ order.order_number || order.id }}</p>
-      <div class="card text-start mt-4">
-        <div class="card-body">
-          @for (vo of order.vendor_orders; track vo.id) {
-            <div class="d-flex justify-content-between py-1">
-              <span>{{ vo.vendor_name }} ({{ vo.items.length }} items)</span>
-              <span>{{ vo.grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+  <div class="container py-4 py-md-5">
+    <div class="order-success-card mx-auto">
+      <div class="order-success-icon">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      </div>
+
+      <h2 class="fw-bold text-center mb-1">Order placed successfully!</h2>
+      <p class="text-muted text-center mb-4">Thank you for shopping with Kwikkart. We've received your order and will get it ready soon.</p>
+
+      @if (order) {
+        <div class="order-success-id">
+          <span class="text-muted">Order ID</span>
+          <span class="fw-semibold">{{ order.order_number || order.id }}</span>
+        </div>
+
+        <div class="order-success-summary">
+          <div class="order-success-summary__row">
+            <span class="text-muted">Items</span>
+            <span class="fw-semibold">{{ itemCount }}</span>
+          </div>
+          <div class="order-success-summary__row">
+            <span class="text-muted">Order total</span>
+            <span class="fw-semibold">{{ order.grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+          </div>
+          @if (paymentLabel) {
+            <div class="order-success-summary__row">
+              <span class="text-muted">Payment status</span>
+              <span class="fw-semibold">{{ paymentLabel }}</span>
             </div>
           }
+
+          @if (order.vendor_orders.length) {
+            <div class="order-success-summary__divider"></div>
+            @for (vo of order.vendor_orders; track vo.id) {
+              <div class="order-success-summary__row order-success-summary__row--muted">
+                <span>{{ vo.vendor_name }} ({{ vo.items.length }} items)</span>
+                <span>{{ vo.grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+              </div>
+            }
+          }
         </div>
+      }
+
+      <div class="order-success-actions">
+        <a class="btn btn-brand" [routerLink]="viewOrderLink">View Order Details</a>
+        <a class="btn btn-outline-brand" [routerLink]="['/o', orgCode]">Continue Shopping</a>
       </div>
-    }
-    <div class="d-flex gap-2 justify-content-center mt-4">
-      <a class="btn btn-brand" [routerLink]="['/o', orgCode, 'orders']">View orders</a>
-      <a class="btn btn-outline-brand" [routerLink]="['/o', orgCode]">Continue shopping</a>
     </div>
   </div>
 }

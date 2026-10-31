@@ -3,9 +3,10 @@ import { FormsModule } from '@angular/forms';
 
 import { CheckoutService } from '../../../core/services/checkout.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Address, AddressPayload } from '../../../core/models/address.model';
+import { Address, AddressPayload, PickedLocation } from '../../../core/models/address.model';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { LocationPickerModalComponent } from '../../../shared/components/location-picker-modal/location-picker-modal.component';
 
 const EMPTY_ADDRESS: AddressPayload = {
   contact_name: '',
@@ -25,7 +26,7 @@ const EMPTY_ADDRESS: AddressPayload = {
 @Component({
   selector: 'app-addresses',
   standalone: true,
-  imports: [FormsModule, SpinnerComponent, EmptyStateComponent],
+  imports: [FormsModule, SpinnerComponent, EmptyStateComponent, LocationPickerModalComponent],
   templateUrl: './addresses.component.html'
 })
 export class AddressesComponent implements OnInit {
@@ -38,6 +39,8 @@ export class AddressesComponent implements OnInit {
   editingId: number | null = null;
   form: AddressPayload = { ...EMPTY_ADDRESS };
   locating = false;
+  formError: string | null = null;
+  showLocationPicker = false;
 
   ngOnInit(): void {
     this.checkout.listAddresses().subscribe({
@@ -52,6 +55,7 @@ export class AddressesComponent implements OnInit {
   startAdd(): void {
     this.editingId = null;
     this.form = { ...EMPTY_ADDRESS };
+    this.formError = null;
     this.showForm = true;
   }
 
@@ -59,6 +63,7 @@ export class AddressesComponent implements OnInit {
     this.editingId = address.id;
     const { id, ...rest } = address;
     this.form = { ...rest };
+    this.formError = null;
     this.showForm = true;
   }
 
@@ -81,7 +86,36 @@ export class AddressesComponent implements OnInit {
     );
   }
 
+  // Search a place or drop a pin, and city/state/pincode/the map coords fill in from it --
+  // house no., landmark, name and phone still need typing, same as "Use my current location".
+  onLocationPicked(loc: PickedLocation): void {
+    this.form.address_line = loc.address_line;
+    this.form.city = loc.city;
+    this.form.state = loc.state;
+    this.form.pincode = loc.pincode;
+    this.form.latitude = loc.latitude;
+    this.form.longitude = loc.longitude;
+    this.showLocationPicker = false;
+  }
+
   save(): void {
+    this.formError = null;
+    if (!/^\d{10}$/.test(this.form.contact_phone.trim())) {
+      this.formError = 'Enter a valid 10-digit phone number.';
+      return;
+    }
+    if (!/^\d{6}$/.test(this.form.pincode.trim())) {
+      this.formError = 'Enter a valid 6-digit pincode.';
+      return;
+    }
+    // Without a pin, delivery charge/serviceability checks fail later at checkout with no clue
+    // why -- catching it here, where "Use my current location" is right above, is the actual fix
+    // rather than a cryptic error three screens later.
+    if (this.form.latitude == null || this.form.longitude == null) {
+      this.formError = 'Tap "Use my current location" to set this address\'s map pin before saving.';
+      return;
+    }
+
     const request = this.editingId
       ? this.checkout.updateAddress(this.editingId, this.form)
       : this.checkout.createAddress(this.form);

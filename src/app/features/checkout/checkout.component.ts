@@ -9,11 +9,12 @@ import { CheckoutService } from '../../core/services/checkout.service';
 import { PaymentsService } from '../../core/services/payments.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
-import { Address, AddressPayload } from '../../core/models/address.model';
+import { Address, AddressPayload, PickedLocation } from '../../core/models/address.model';
 import { CartItem } from '../../core/models/cart.model';
 import { DeliverySlot, PaymentMethod } from '../../core/models/order.model';
 import { AppError } from '../../core/models/api-error.model';
 import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
+import { LocationPickerModalComponent } from '../../shared/components/location-picker-modal/location-picker-modal.component';
 
 // Mirrors kkapi public_app/utils/serviceability.js#message -- same reasons, same phrasing style.
 const SERVICEABILITY_MESSAGES: Record<string, string> = {
@@ -44,7 +45,7 @@ const EMPTY_ADDRESS: AddressPayload = {
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [FormsModule, CurrencyPipe, SpinnerComponent],
+  imports: [FormsModule, CurrencyPipe, SpinnerComponent, LocationPickerModalComponent],
   templateUrl: './checkout.component.html'
 })
 export class CheckoutComponent implements OnInit {
@@ -70,6 +71,8 @@ export class CheckoutComponent implements OnInit {
   showAddressForm = false;
   newAddress: AddressPayload = { ...EMPTY_ADDRESS };
   locating = false;
+  addressFormError: string | null = null;
+  showLocationPicker = false;
 
   // Surfaced from placeOrder's 400 (not_serviceable / address_location_required /
   // insufficient_stock / out_of_stock) -- these are in the error interceptor's SILENT_CODES set
@@ -149,7 +152,36 @@ export class CheckoutComponent implements OnInit {
     );
   }
 
+  // Search a place or drop a pin, and city/state/pincode/the map coords fill in from it --
+  // house no., landmark, name and phone still need typing, same as "Use my current location".
+  onLocationPicked(loc: PickedLocation): void {
+    this.newAddress.address_line = loc.address_line;
+    this.newAddress.city = loc.city;
+    this.newAddress.state = loc.state;
+    this.newAddress.pincode = loc.pincode;
+    this.newAddress.latitude = loc.latitude;
+    this.newAddress.longitude = loc.longitude;
+    this.showLocationPicker = false;
+  }
+
   saveAddress(): void {
+    this.addressFormError = null;
+    if (!/^\d{10}$/.test(this.newAddress.contact_phone.trim())) {
+      this.addressFormError = 'Enter a valid 10-digit phone number.';
+      return;
+    }
+    if (!/^\d{6}$/.test(this.newAddress.pincode.trim())) {
+      this.addressFormError = 'Enter a valid 6-digit pincode.';
+      return;
+    }
+    // Without a pin, delivery charge/serviceability checks fail later with no clue why -- catching
+    // it here, where "Use my current location" is right above, is the actual fix rather than a
+    // cryptic error after placing the order.
+    if (this.newAddress.latitude == null || this.newAddress.longitude == null) {
+      this.addressFormError = 'Tap "Use my current location" to set this address\'s map pin before saving.';
+      return;
+    }
+
     this.checkout.createAddress(this.newAddress).subscribe((address) => {
       this.addresses = [...this.addresses, address];
       this.newAddress = { ...EMPTY_ADDRESS };

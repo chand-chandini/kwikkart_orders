@@ -1,0 +1,87 @@
+<div class="landing-bg d-flex align-items-center justify-content-center">
+@if (step === 'mobile') {
+  <app-auth-card title="Sign in" subtitle="We'll send you a one-time code to verify your number.">
+    <form (ngSubmit)="sendOtp()">
+      <label class="form-label" for="mobile">Mobile number</label>
+      <div class="input-group mb-2">
+        <span class="input-group-text">+91</span>
+        <input
+          id="mobile"
+          class="form-control"
+          type="tel"
+          inputmode="numeric"
+          maxlength="10"
+          placeholder="10-digit mobile number"
+          [(ngModel)]="mobile"
+          name="mobile"
+          required
+        />
+      </div>
+      @if (errorMessage) {
+        <div class="text-danger small mb-2">{{ errorMessage }}</div>
+      }
+      <button class="btn btn-brand w-100 mt-3 py-2" type="submit" [disabled]="submitting">
+        @if (submitting) {
+          <span class="spinner-border spinner-border-sm me-2"></span>
+        }
+        Send OTP
+      </button>
+    </form>
+  </app-auth-card>
+} @else if (step === 'otp') {
+  <app-auth-card title="Verify OTP" [subtitle]="'Enter the code sent to +91 ' + mobile">
+    <form (ngSubmit)="verifyOtp()">
+      <label class="form-label" for="otp">OTP</label>
+      <input
+        id="otp"
+        class="form-control mb-2 text-center auth-otp-input"
+        type="text"
+        inputmode="numeric"
+        maxlength="4"
+        placeholder="• • • •"
+        [(ngModel)]="otp"
+        name="otp"
+        required
+      />
+      @if (errorMessage) {
+        <div class="text-danger small mb-2">{{ errorMessage }}</div>
+      }
+      <button class="btn btn-brand w-100 mt-3 py-2" type="submit" [disabled]="submitting">
+        @if (submitting) {
+          <span class="spinner-border spinner-border-sm me-2"></span>
+        }
+        Verify &amp; continue
+      </button>
+      <div class="auth-otp-actions">
+        <button type="button" class="auth-otp-actions__btn" (click)="resendOtp()">Resend OTP</button>
+        <span class="auth-otp-actions__dot">&bull;</span>
+        <button type="button" class="auth-otp-actions__btn" (click)="backToMobile()">Change number</button>
+      </div>
+    </form>
+  </app-auth-card>
+} @else {
+  <app-auth-card title="Find your store" subtitle="Enter the store code or link your store shared with you.">
+    <form (ngSubmit)="goToStore()">
+      <label class="form-label" for="code">Store code</label>
+      <input
+        id="code"
+        class="form-control"
+        type="text"
+        placeholder="e.g. ABCD1234"
+        [(ngModel)]="code"
+        name="code"
+        required
+      />
+      @if (errorMessage) {
+        <div class="text-danger small mb-2">{{ errorMessage }}</div>
+      }
+      <button class="btn btn-brand w-100 mt-3 py-2" type="submit" [disabled]="submitting">
+        @if (submitting) {
+          <span class="spinner-border spinner-border-sm me-2"></span>
+        }
+        Continue
+      </button>
+    </form>
+  </app-auth-card>
+}
+</div>

@@ -5,6 +5,11 @@
     <div class="row g-4">
       <div class="col-12 col-md-6">
         <div class="product-gallery__frame mb-2">
+          <button type="button" class="product-gallery__back" (click)="goBack()" aria-label="Go back">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </button>
           @if (activeImage) {
             <img [src]="activeImage" [alt]="product.name" class="product-gallery__main" />
           } @else {
@@ -34,12 +39,16 @@
       </div>
 
       <div class="col-12 col-md-6">
-        @if (product.brand) {
-          <div class="text-muted">{{ product.brand }}</div>
-        }
-        <h2 class="fw-bold">{{ product.name }}</h2>
-        @if (selectedOption) {
-          <div class="text-muted mb-2">{{ selectedOption.name }}</div>
+        <h2 class="fw-bold mb-1">{{ product.name }}</h2>
+        @if (product.brand || product.vendor_name) {
+          <div class="text-muted small mb-2">
+            @if (product.brand) {
+              <div>Brand: {{ product.brand }}</div>
+            }
+            @if (product.vendor_name) {
+              <div>Sold by {{ product.vendor_name }}</div>
+            }
+          </div>
         }
 
         @if (product.rating_count || product.expiry_date) {
@@ -61,14 +70,30 @@
           }
         </div>
 
+        @if (deliveryStatus) {
+          <div class="pdp-delivery-status mb-3" [class.pdp-delivery-status--bad]="deliveryStatus === 'unavailable'">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              @if (deliveryStatus === 'ok') {
+                <path d="M20 6 9 17l-5-5" />
+              } @else {
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 8v5M12 16h.01" />
+              }
+            </svg>
+            <span>Delivery Status: <strong>{{ deliveryStatusLabel }}</strong></span>
+          </div>
+        }
+
         @if (sizeOptions.length > 1) {
           <div class="mb-3">
-            <div class="small text-muted mb-2">Select size / pack</div>
+            @if (selectedOption) {
+              <div class="small text-muted mb-2">Selected Quantity: {{ selectedOption.name }}</div>
+            }
             <div class="size-option-grid">
               @for (option of sizeOptions; track option.variantId) {
                 <button
                   type="button"
-                  class="variant-option w-100"
+                  class="variant-option"
                   [class.variant-option--selected]="selectedOption?.variantId === option.variantId"
                   [disabled]="!option.isAvailable || option.stockQty <= 0"
                   (click)="selectOption(option)"
@@ -91,23 +116,29 @@
         }
 
         <div class="qty-add-row mb-3">
-          <app-qty-stepper [(qty)]="qty" [disabled]="!inStock" [max]="selectedOption?.stockQty || product.stock_qty" />
-          <button class="btn btn-brand flex-grow-1 d-flex align-items-center justify-content-center gap-2" [disabled]="!inStock || adding" (click)="addToCart()">
-            @if (adding) {
-              <span class="spinner-border spinner-border-sm"></span>
-            } @else {
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="20" r="1.4" fill="currentColor" stroke="none" />
-                <circle cx="18" cy="20" r="1.4" fill="currentColor" stroke="none" />
-                <path d="M2.5 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 7H6" />
-              </svg>
-            }
-            @if (added) {
-              Added to cart ✓
-            } @else {
+          @if (cartQty > 0) {
+            <app-qty-stepper
+              [qty]="cartQty"
+              [min]="0"
+              [max]="selectedOption?.stockQty || product.stock_qty"
+              [disabled]="!inStock || updatingQty"
+              (qtyChange)="onCartQtyChange($event)"
+            />
+          } @else {
+            <app-qty-stepper [(qty)]="qty" [disabled]="!inStock" [max]="selectedOption?.stockQty || product.stock_qty" />
+            <button class="btn btn-brand flex-grow-1 d-flex align-items-center justify-content-center gap-2" [disabled]="!inStock || adding" (click)="addToCart()">
+              @if (adding) {
+                <span class="spinner-border spinner-border-sm"></span>
+              } @else {
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="20" r="1.4" fill="currentColor" stroke="none" />
+                  <circle cx="18" cy="20" r="1.4" fill="currentColor" stroke="none" />
+                  <path d="M2.5 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 7H6" />
+                </svg>
+              }
               Add to cart
-            }
-          </button>
+            </button>
+          }
         </div>
 
         @if (product.highlights.length) {

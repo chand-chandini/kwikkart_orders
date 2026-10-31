@@ -3,69 +3,138 @@
 } @else if (notFound) {
   <div class="container py-5 text-center text-muted">Order not found.</div>
 } @else {
-  <div class="container py-4">
-    @if (parentOrder) {
-      <h3 class="fw-bold mb-1">Order #{{ parentOrder.order_number }}</h3>
-      @if (paymentLabel; as label) {
-        <div class="text-muted mb-4">{{ label }}</div>
-      }
+  <div class="container py-4 order-detail-page">
+    <div class="order-detail-id mb-3">Order ID - {{ orderNumber }}</div>
 
-      @for (vo of vendorEntries; track vo.id) {
-        <div class="card mb-3">
-          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h6 class="fw-bold mb-2">Order Items</h6>
+    @for (vo of vendorGroups; track vo.id) {
+      <div class="info-card mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="order-detail-store-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l1.5-5h15L21 9" />
+                <path d="M3 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0" />
+                <path d="M5 9v10h14V9" />
+                <path d="M9 19v-6h6v6" />
+              </svg>
+            </span>
             <span class="fw-semibold">{{ vo.vendor_name }}</span>
-            <span class="badge" [class]="statusBadge[vo.status]">{{ statusLabels[vo.status] }}</span>
           </div>
-          <div class="card-body">
-            @for (item of vo.items; track item.id) {
-              <div class="d-flex align-items-center gap-3 py-2 border-bottom">
-                @if (item.image_url) {
-                  <img [src]="item.image_url" class="cart-item-image" alt="" />
-                } @else {
-                  <div class="cart-item-image cart-item-image--placeholder"></div>
-                }
-                <div class="flex-grow-1">
-                  <div>{{ item.product_name }}</div>
-                  <div class="text-muted small">Qty {{ item.qty }} × {{ item.unit_price | currency: 'INR' : 'symbol' : '1.0-2' }}</div>
-                </div>
-                <div class="fw-semibold">{{ item.line_total | currency: 'INR' : 'symbol' : '1.0-2' }}</div>
-              </div>
+          <span class="order-status-pill" [class]="statusPill[vo.status]">{{ statusLabels[vo.status] }}</span>
+        </div>
+
+        @for (item of vo.items; track item.id) {
+          <div class="d-flex align-items-center gap-3 py-2 order-detail-item">
+            @if (item.image_url) {
+              <img [src]="item.image_url" class="cart-item-image" alt="" />
+            } @else {
+              <div class="cart-item-image cart-item-image--placeholder"></div>
             }
-            <div class="d-flex justify-content-between pt-2 fw-semibold">
-              <span>Total</span>
-              <span>{{ vo.grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            <div class="flex-grow-1">
+              <div>{{ item.product_name }}</div>
+              <div class="small">
+                <span class="fw-semibold text-success">{{ item.unit_price | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+                @if (item.mrp > item.unit_price) {
+                  <span class="text-muted text-decoration-line-through ms-1">{{ item.mrp | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+                }
+                <span class="text-muted ms-1">x {{ item.qty }}</span>
+              </div>
             </div>
           </div>
-        </div>
-      }
-    } @else if (singleOrder) {
-      <h3 class="fw-bold mb-1">Order #{{ singleOrder.order_number }}</h3>
-      <div class="card mb-3">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-          <span class="fw-semibold">{{ singleOrder.vendor_name }}</span>
-          <span class="badge" [class]="statusBadge[singleOrder.status]">{{ statusLabels[singleOrder.status] }}</span>
-        </div>
-        <div class="card-body">
-          @for (item of singleOrder.items; track item.id) {
-            <div class="d-flex align-items-center gap-3 py-2 border-bottom">
-              @if (item.image_url) {
-                <img [src]="item.image_url" class="cart-item-image" alt="" />
-              } @else {
-                <div class="cart-item-image cart-item-image--placeholder"></div>
-              }
-              <div class="flex-grow-1">
-                <div>{{ item.product_name }}</div>
-                <div class="text-muted small">Qty {{ item.qty }} × {{ item.unit_price | currency: 'INR' : 'symbol' : '1.0-2' }}</div>
-              </div>
-              <div class="fw-semibold">{{ item.line_total | currency: 'INR' : 'symbol' : '1.0-2' }}</div>
-            </div>
-          }
-          <div class="d-flex justify-content-between pt-2 fw-semibold">
-            <span>Total</span>
-            <span>{{ singleOrder.grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+        }
+
+        <div class="order-detail-bill mt-2 pt-2">
+          <div class="d-flex justify-content-between text-muted">
+            <span>Items</span>
+            <span class="fw-semibold text-dark">{{ vo.items_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted">
+            <span>Delivery</span>
+            <span class="fw-semibold text-dark">{{ vo.delivery_charge | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between fw-semibold mt-1">
+            <span>Store total</span>
+            <span>{{ vo.grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
           </div>
         </div>
       </div>
     }
+
+    @if (address) {
+      <div class="info-card mb-3">
+        <h6 class="fw-bold mb-3">Shipping Details</h6>
+
+        <div class="order-detail-row">
+          <span class="order-detail-row__icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+            </svg>
+          </span>
+          <div>
+            <div class="order-detail-row__label">NAME</div>
+            <div>{{ address.contact_name }}</div>
+          </div>
+        </div>
+
+        <div class="order-detail-row">
+          <span class="order-detail-row__icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z" />
+            </svg>
+          </span>
+          <div>
+            <div class="order-detail-row__label">PH NO</div>
+            <div>{{ address.contact_phone }}</div>
+          </div>
+        </div>
+
+        <div class="order-detail-row order-detail-row--last">
+          <span class="order-detail-row__icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+          </span>
+          <div>
+            <div class="order-detail-row__label">ADDRESS</div>
+            <div>{{ addressLine }}</div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="info-card mb-3">
+      <h6 class="fw-bold mb-3">Bill details</h6>
+
+      <div class="d-flex justify-content-between align-items-center py-1">
+        <span class="text-muted">Items total</span>
+        <span class="fw-semibold">{{ itemsTotal | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center py-1">
+        <span class="text-muted">Delivery</span>
+        <span class="fw-semibold">{{ deliveryTotal | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+      </div>
+      @if (paymentLabel) {
+        <div class="d-flex justify-content-between align-items-center py-1">
+          <span class="text-muted">Payment</span>
+          <span class="fw-semibold">{{ paymentLabel }}</span>
+        </div>
+      }
+
+      <hr />
+
+      <div class="d-flex justify-content-between align-items-center fw-bold">
+        <span>Grand total</span>
+        <span>{{ grandTotal | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+      </div>
+      @if (isCod) {
+        <div class="d-flex justify-content-between align-items-center fw-bold">
+          <span>To pay on delivery</span>
+          <span>{{ payableOnDelivery | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+        </div>
+      }
+    </div>
   </div>
 }

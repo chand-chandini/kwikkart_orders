@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 import { OrgResolveReason } from '../../core/models/org.model';
 import { BRANDING } from '../../core/config/branding';
 
-const MESSAGES: Record<OrgResolveReason, { title: string; body: string }> = {
+export const ORG_RESOLVE_MESSAGES: Record<OrgResolveReason, { title: string; body: string }> = {
   not_found: {
     title: 'Store not found',
     body: 'This storefront link is invalid or no longer exists. Double-check the link you were given.'
@@ -36,9 +36,9 @@ const MESSAGES: Record<OrgResolveReason, { title: string; body: string }> = {
 })
 export class OrgUnavailableComponent {
   @Input() set reason(value: OrgResolveReason | null) {
-    this.copy = (value && MESSAGES[value]) || MESSAGES.not_found;
+    this.copy = (value && ORG_RESOLVE_MESSAGES[value]) || ORG_RESOLVE_MESSAGES.not_found;
   }
 
   readonly branding = BRANDING;
-  copy = MESSAGES.not_found;
+  copy = ORG_RESOLVE_MESSAGES.not_found;
 }

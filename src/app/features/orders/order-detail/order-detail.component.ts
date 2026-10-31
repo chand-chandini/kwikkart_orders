@@ -1,4 +1,4 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
@@ -6,14 +6,16 @@ import { catchError, of } from 'rxjs';
 import { OrgContextService } from '../../../core/services/org-context.service';
 import { OrdersService } from '../../../core/services/orders.service';
 import { OrderDetail, ParentOrder, ParentOrderVendorEntry } from '../../../core/models/order.model';
-import { ORDER_STATUS_BADGE, ORDER_STATUS_LABELS, paymentDisplayLabel } from '../../../core/config/order-status';
+import { Address } from '../../../core/models/address.model';
+import { ORDER_STATUS_PILL, ORDER_STATUS_LABELS, paymentDisplayLabel } from '../../../core/config/order-status';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, SpinnerComponent],
-  templateUrl: './order-detail.component.html'
+  imports: [CurrencyPipe, SpinnerComponent],
+  templateUrl: './order-detail.component.html',
+  styleUrl: './order-detail.component.scss'
 })
 export class OrderDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -21,7 +23,7 @@ export class OrderDetailComponent implements OnInit {
   private readonly orders = inject(OrdersService);
 
   readonly statusLabels = ORDER_STATUS_LABELS;
-  readonly statusBadge = ORDER_STATUS_BADGE;
+  readonly statusPill = ORDER_STATUS_PILL;
 
   loading = true;
   notFound = false;
@@ -32,12 +34,78 @@ export class OrderDetailComponent implements OnInit {
     return this.orgContext.getCurrentCode() ?? '';
   }
 
-  get vendorEntries(): ParentOrderVendorEntry[] {
-    return this.parentOrder?.vendor_orders ?? [];
+  // The page only ever renders this list — a parent checkout's vendor orders, or the single
+  // legacy order (pre parent_order_id) wrapped in the same shape, so the template never needs to
+  // branch between the two sources.
+  get vendorGroups(): ParentOrderVendorEntry[] {
+    if (this.parentOrder) {
+      return this.parentOrder.vendor_orders;
+    }
+    if (this.singleOrder) {
+      const o = this.singleOrder;
+      return [
+        {
+          id: o.id,
+          order_number: o.order_number,
+          vendor_id: 0,
+          vendor_name: o.vendor_name,
+          status: o.status,
+          items_total: o.items_total,
+          delivery_charge: o.delivery_charge,
+          grand_total: o.grand_total,
+          items: o.items,
+          payment_method: o.payment_method,
+          payment_summary: o.payment_summary
+        }
+      ];
+    }
+    return [];
+  }
+
+  get orderNumber(): string {
+    return this.parentOrder?.order_number ?? this.singleOrder?.order_number ?? '';
+  }
+
+  get address(): Address | null {
+    return this.parentOrder?.address ?? this.singleOrder?.address ?? null;
+  }
+
+  get addressLine(): string {
+    const a = this.address;
+    if (!a) {
+      return '';
+    }
+    const line = [a.house_no, a.address_line].filter(Boolean).join(' ');
+    const landmark = a.landmark ? `, ${a.landmark}` : '';
+    return `${line}${landmark}, ${a.city}, ${a.state} ${a.pincode}`;
+  }
+
+  get itemsTotal(): number {
+    return this.parentOrder?.items_total ?? this.singleOrder?.items_total ?? 0;
+  }
+
+  get deliveryTotal(): number {
+    return this.parentOrder?.delivery_charge ?? this.singleOrder?.delivery_charge ?? 0;
+  }
+
+  get grandTotal(): number {
+    return this.parentOrder?.grand_total ?? this.singleOrder?.grand_total ?? 0;
+  }
+
+  private get paymentMethod(): string | undefined {
+    return this.parentOrder?.payment_method ?? this.singleOrder?.payment_method;
   }
 
   get paymentLabel(): string | null {
-    return paymentDisplayLabel(this.parentOrder?.payment_method, this.parentOrder?.payment_status);
+    return paymentDisplayLabel(this.paymentMethod, this.parentOrder?.payment_status ?? null);
+  }
+
+  get isCod(): boolean {
+    return this.paymentMethod === 'cod';
+  }
+
+  get payableOnDelivery(): number {
+    return this.parentOrder?.payment_summary?.payable_on_delivery ?? this.singleOrder?.payment_summary?.payable_on_delivery ?? 0;
   }
 
   ngOnInit(): void {

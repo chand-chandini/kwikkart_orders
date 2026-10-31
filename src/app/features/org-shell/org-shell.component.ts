@@ -8,12 +8,13 @@ import { CartService } from '../../core/services/cart.service';
 import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
+import { FloatingCartBarComponent } from '../../shared/components/floating-cart-bar/floating-cart-bar.component';
 import { OrgUnavailableComponent } from './org-unavailable.component';
 
 @Component({
   selector: 'app-org-shell',
   standalone: true,
-  imports: [RouterOutlet, SpinnerComponent, HeaderComponent, FooterComponent, OrgUnavailableComponent],
+  imports: [RouterOutlet, SpinnerComponent, HeaderComponent, FooterComponent, FloatingCartBarComponent, OrgUnavailableComponent],
   template: `
     @if (orgContext.resolving()) {
       <app-spinner label="Loading store..." minHeight="100vh" />
@@ -24,6 +25,7 @@ import { OrgUnavailableComponent } from './org-unavailable.component';
           <router-outlet />
         </main>
         <app-footer [orgCode]="code" />
+        <app-floating-cart-bar [orgCode]="code" />
       </div>
     } @else {
       <app-org-unavailable [reason]="orgContext.invalidReason()" />

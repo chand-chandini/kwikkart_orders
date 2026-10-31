@@ -18,6 +18,17 @@ export const ORDER_STATUS_BADGE: Record<number, string> = {
   6: 'bg-danger'
 };
 
+// Soft pill variant (light bg, colored text) used on the order detail page, separate from
+// ORDER_STATUS_BADGE's solid Bootstrap badges so the order list page is unaffected.
+export const ORDER_STATUS_PILL: Record<number, string> = {
+  1: 'order-status-pill--placed',
+  2: 'order-status-pill--confirmed',
+  3: 'order-status-pill--packed',
+  4: 'order-status-pill--packed',
+  5: 'order-status-pill--delivered',
+  6: 'order-status-pill--cancelled'
+};
+
 export const PAYMENT_STATUS_LABELS: Record<number, string> = {
   1: 'Payment pending',
   2: 'Payment authorized',

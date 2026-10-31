@@ -19,6 +19,15 @@ html, body {
   font-family: var(--kk-font-family);
 }
 
+// Google Places autocomplete's suggestion dropdown (.pac-container) is appended straight to
+// <body>, outside any component's own scoped styles, so it can only be targeted globally like
+// this. Its own default z-index sits below our modal overlays (location-picker-modal is 1065),
+// so inside that modal the dropdown rendered behind the dialog -- invisible, which read as
+// "search returns nothing" even though suggestions were there the whole time.
+.pac-container {
+  z-index: 2000 !important;
+}
+
 .btn-brand {
   background-color: var(--kk-brand-primary);
   border-color: var(--kk-brand-primary);

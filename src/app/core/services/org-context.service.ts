@@ -5,6 +5,12 @@ import { Observable, map, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { OrgResolveResponse } from '../models/org.model';
 
+// Last store code that resolved successfully, kept in localStorage (not just the in-memory
+// `cache` below, which starts empty again on every fresh page load/session) so the landing
+// page's store-code step can come back pre-filled next time instead of making a returning
+// customer retype a code they already gave once.
+const LAST_CODE_KEY = 'kk_last_org_code';
+
 @Injectable({ providedIn: 'root' })
 export class OrgContextService {
   private readonly cache = new Map<string, OrgResolveResponse>();
@@ -59,8 +65,15 @@ export class OrgContextService {
         this.currentCode.set(normalized);
         this.currentResult.set(result);
         this.resolving.set(false);
+        if (result.valid) {
+          localStorage.setItem(LAST_CODE_KEY, normalized);
+        }
       })
     );
+  }
+
+  getLastCode(): string | null {
+    return localStorage.getItem(LAST_CODE_KEY);
   }
 
   getOrgId(): number | null {

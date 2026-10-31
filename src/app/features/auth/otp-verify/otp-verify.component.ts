@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { AppError } from '../../../core/models/api-error.model';
 import { AuthCardComponent } from '../../../shared/components/auth-card/auth-card.component';
 
 @Component({
@@ -50,8 +51,13 @@ export class OtpVerifyComponent {
           this.router.navigateByUrl(this.returnUrl || `/o/${this.code}`);
         }
       },
-      error: () => {
+      // verify_otp answers a wrong code with 401 ("incorrect otp") -- the same status a real
+      // expired-session response uses, so the global error interceptor treats it as a silent
+      // logout-and-redirect and skips its usual toast. Show the message inline here instead of
+      // leaving the screen looking like nothing happened.
+      error: (err: AppError) => {
         this.submitting = false;
+        this.errorMessage = err.message || 'Incorrect OTP. Please try again.';
       }
     });
   }

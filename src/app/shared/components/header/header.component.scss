@@ -11,6 +11,14 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.6rem 0;
+
+  // The container's own gutter (Bootstrap's default 0.75rem) reads as basically nothing once the
+  // hamburger/cart are 38px filled circles right up against it -- add real breathing room from
+  // the screen edge on phones specifically.
+  @media (max-width: 575.98px) {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
 }
 
 .site-header__start {
@@ -144,18 +152,65 @@
   &::placeholder {
     color: var(--kk-brand-muted);
   }
+
+  // type="search" inputs render their own native clear "x" on mobile Chrome/Safari -- without
+  // this it shows up right next to our own .site-header__search-clear button, looking like two
+  // cancel buttons. Desktop browsers mostly don't render this by default, which is why the bug
+  // only showed up on mobile.
+  &::-webkit-search-cancel-button,
+  &::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  &::-ms-clear {
+    display: none;
+  }
 }
 
-.site-header__search-submit {
+.site-header__search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--kk-brand-muted);
+  padding: 0;
+  cursor: pointer;
+
+  &:hover, &:focus {
+    background: var(--kk-brand-bg);
+    color: var(--kk-brand-text);
+  }
 }
 
 .site-header__nav {
   align-items: center;
   gap: 1.25rem;
   flex-shrink: 0;
+}
+
+.site-header__app-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  text-decoration: none;
+
+  &:hover, &:focus {
+    background: rgba(255, 255, 255, 0.28);
+    color: #fff;
+  }
 }
 
 .site-header__nav-link {
@@ -173,6 +228,15 @@
 // Below lg: the mobile-only second row carrying just the search bar.
 .site-header__search-row {
   background: #fff;
+
+  // Matches .site-header__bar-inner's total inset (container's own 0.75rem gutter + 0.5rem extra)
+  // so the search pill lines up with the icons in the row above it.
+  @media (max-width: 575.98px) {
+    .container {
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+    }
+  }
 }
 
 // Mobile nav sidebar -- off-canvas panel + backdrop, toggled by the hamburger. Always in the DOM
