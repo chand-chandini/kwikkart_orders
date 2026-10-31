@@ -17,6 +17,11 @@ export interface MyOrgMembership {
   joined_at: string;
   role_key: string;
   role_name: string;
+  // Only present on /my/orgs (not the shape redeemCode's tap() synthesizes) -- module_keys needs
+  // 'super_mart' and store_code needs to be non-null for this membership to double as a web
+  // ordering storefront the landing page can jump straight back into.
+  module_keys?: string[];
+  store_code?: string | null;
 }
 
 export interface RedeemCodeResponse {

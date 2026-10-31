@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { OrgContextService } from '../../core/services/org-context.service';
 import { ORG_RESOLVE_MESSAGES } from '../org-shell/org-unavailable.component';
 import { AppError } from '../../core/models/api-error.model';
+import { MembershipStatus } from '../../core/models/membership.model';
 import { AuthCardComponent } from '../../shared/components/auth-card/auth-card.component';
 
 type Step = 'mobile' | 'otp' | 'code';
@@ -70,13 +71,8 @@ export class LandingComponent {
     this.submitting = true;
     this.auth.verifyOtp(this.mobile, this.otp.trim()).subscribe({
       next: () => {
-        this.submitting = false;
         this.step = 'code';
-        // Already joined a store on this browser before: go straight back in instead of making
-        // a returning customer confirm the same code again every single login.
-        if (this.code) {
-          this.goToStore();
-        }
+        this.continueToExistingStore();
       },
       // verify_otp answers a wrong code with 401 ("incorrect otp") -- the same status a real
       // expired-session response uses, so the global error interceptor treats it as a silent
@@ -85,6 +81,36 @@ export class LandingComponent {
       error: (err: AppError) => {
         this.submitting = false;
         this.errorMessage = err.message || 'Incorrect OTP. Please try again.';
+      }
+    });
+  }
+
+  // Runs right after OTP verification: looks up every store this login is already an approved
+  // customer of (server-side, so it works from any browser/device, not just the one that
+  // resolved a code before) and continues straight into the most recently joined one. Falls back
+  // to this browser's own last-used code (pre-filled into `code` already) only if the lookup
+  // comes back empty or fails, and otherwise leaves the manual code step showing.
+  private continueToExistingStore(): void {
+    this.auth.listMyOrgs().subscribe({
+      next: (orgs) => {
+        const existing = orgs.find(
+          (o) => o.membership_status === MembershipStatus.Approved && o.module_keys?.includes('super_mart') && o.store_code
+        );
+        if (existing?.store_code) {
+          this.code = existing.store_code;
+          this.goToStore();
+          return;
+        }
+        this.submitting = false;
+        if (this.code) {
+          this.goToStore();
+        }
+      },
+      error: () => {
+        this.submitting = false;
+        if (this.code) {
+          this.goToStore();
+        }
       }
     });
   }
