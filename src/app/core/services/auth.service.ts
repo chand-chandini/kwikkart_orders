@@ -14,6 +14,11 @@ export class AuthService {
   readonly currentUser = signal<User | null>(this.readStoredUser());
   readonly membershipByOrgId = new Map<number, MyOrgMembership | null>();
 
+  // Set for the one session this login just completed in, so the home page can show the
+  // "get the app" prompt once it actually lands there -- not on the OTP screen itself, which
+  // read as an error popping up mid-login rather than a follow-up nudge.
+  private justLoggedIn = false;
+
   constructor(private http: HttpClient) {}
 
   private readStoredUser(): User | null {
@@ -121,6 +126,15 @@ export class AuthService {
   private persistSession(data: VerifyOtpResponse): void {
     localStorage.setItem(TOKEN_KEY, data.token);
     this.persistUser(data.user);
+    this.justLoggedIn = true;
+  }
+
+  // One-shot read: true only for the first check after a login that just completed in this
+  // session. HomeComponent calls this once its catalog data has loaded.
+  consumeJustLoggedIn(): boolean {
+    const was = this.justLoggedIn;
+    this.justLoggedIn = false;
+    return was;
   }
 
   private persistUser(user: User): void {

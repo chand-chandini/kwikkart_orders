@@ -1,0 +1,24 @@
+<div class="adm-overlay" (click)="close()">
+  <div class="adm-dialog" role="dialog" aria-modal="true" aria-label="Get the app" (click)="$event.stopPropagation()">
+    <button type="button" class="adm-close" aria-label="Close" (click)="close()">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+
+    <div class="adm-icon">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="6" y="2" width="12" height="20" rx="2" />
+        <path d="M11 18h2" />
+      </svg>
+    </div>
+
+    <h5 class="adm-title">This store is also on our app!</h5>
+    <p class="adm-body">Get a faster, smoother ordering experience -- download the app to track orders, save addresses and shop on the go.</p>
+
+    <a class="btn btn-brand w-100 py-2" [href]="playStoreUrl" target="_blank" rel="noopener noreferrer" (click)="close()">
+      Download App
+    </a>
+    <button type="button" class="btn btn-link w-100 adm-continue" (click)="close()">Continue on website</button>
+  </div>
+</div>

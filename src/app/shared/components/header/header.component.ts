@@ -66,9 +66,12 @@ export class HeaderComponent {
     }
   }
 
+  // Goes straight to the sign-in screen rather than this org's home -- home is
+  // authGuard-protected too, so navigating there post-logout would just bounce through it to
+  // the same place a beat later, with an extra redirect flash in between.
   logout(): void {
     this.authService.logout();
     this.cartService.reset();
-    this.router.navigate(['/o', this.orgCode]);
+    this.router.navigate(['/o', this.orgCode, 'auth', 'mobile']);
   }
 }

@@ -93,4 +93,8 @@
       <app-empty-state icon="🛒" title="No products yet" message="This store hasn't added products yet." />
     }
   </div>
+
+  @if (showAppDownloadModal) {
+    <app-app-download-modal (closed)="showAppDownloadModal = false" />
+  }
 }
