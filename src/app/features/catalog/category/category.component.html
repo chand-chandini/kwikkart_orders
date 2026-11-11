@@ -1,50 +1,71 @@
 <div class="container py-4">
-  @if (subcategories.length) {
-    <div class="d-flex gap-2 overflow-auto pb-2 mb-3 subcategory-scroller">
-      <button
-        type="button"
-        class="btn btn-sm rounded-pill"
-        [class.btn-brand]="activeSubcategoryId === null"
-        [class.btn-outline-secondary]="activeSubcategoryId !== null"
-        (click)="selectSubcategory(null)"
-      >
-        All
-      </button>
-      @for (sub of subcategories; track sub.id) {
+  <div class="category-browse__header d-flex align-items-center gap-3 mb-3">
+    <button type="button" class="btn btn-light rounded-circle" [routerLink]="['/o', orgCode]" aria-label="Back to store">
+      <span aria-hidden="true">‹</span>
+    </button>
+    <h4 class="fw-semibold mb-0 flex-grow-1">{{ category?.name || 'Products' }}</h4>
+    <form class="category-browse__search input-group" (ngSubmit)="search()">
+      <span class="input-group-text" aria-hidden="true">⌕</span>
+      <input class="form-control" type="search" placeholder="Search" [(ngModel)]="searchQuery" name="q" />
+    </form>
+  </div>
+
+  @if (loading && !category) {
+    <app-spinner label="Loading category..." />
+  } @else {
+    <div class="category-browse__layout">
+      <nav class="category-browse__sidebar" aria-label="Subcategories">
         <button
           type="button"
-          class="btn btn-sm rounded-pill text-nowrap"
-          [class.btn-brand]="activeSubcategoryId === sub.id"
-          [class.btn-outline-secondary]="activeSubcategoryId !== sub.id"
-          (click)="selectSubcategory(sub.id)"
+          class="category-browse__subcategory"
+          [class.category-browse__subcategory--active]="activeSubcategoryId === null"
+          (click)="selectSubcategory(null)"
         >
-          {{ sub.name }}
+          <span class="category-browse__subcategory-image category-browse__subcategory-image--all">⌖</span>
+          <span>All</span>
         </button>
-      }
-    </div>
-  }
+        @for (sub of subcategories; track sub.id) {
+          <button
+            type="button"
+            class="category-browse__subcategory"
+            [class.category-browse__subcategory--active]="activeSubcategoryId === sub.id"
+            (click)="selectSubcategory(sub.id)"
+          >
+            @if (sub.image_url) {
+              <img class="category-browse__subcategory-image" [src]="sub.image_url" [alt]="sub.name" />
+            } @else {
+              <span class="category-browse__subcategory-image category-browse__subcategory-image--all">{{ sub.icon || '🏷️' }}</span>
+            }
+            <span>{{ sub.name }}</span>
+          </button>
+        }
+      </nav>
 
-  @if (loading) {
-    <app-spinner label="Loading products..." />
-  } @else if (products.length) {
-    <div class="row g-3">
-      @for (product of products; track product.id) {
-        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-          <app-product-card [product]="product" [orgCode]="orgCode" [orgId]="product.org_id" />
-        </div>
-      }
-    </div>
-    @if (hasMore) {
-      <div class="text-center mt-4">
-        <button class="btn btn-outline-brand" [disabled]="loadingMore" (click)="loadMore()">
-          @if (loadingMore) {
-            <span class="spinner-border spinner-border-sm me-2"></span>
+      <section class="category-browse__products" aria-label="Products">
+        @if (loading) {
+          <app-spinner label="Loading products..." />
+        } @else if (products.length) {
+          <div class="row g-3">
+            @for (product of products; track product.id) {
+              <div class="col-6 col-md-4 col-xl-3">
+                <app-product-card [product]="product" [orgCode]="orgCode" [orgId]="product.org_id" />
+              </div>
+            }
+          </div>
+          @if (hasMore) {
+            <div class="text-center mt-4">
+              <button class="btn btn-outline-brand" [disabled]="loadingMore" (click)="loadMore()">
+                @if (loadingMore) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                Load more
+              </button>
+            </div>
           }
-          Load more
-        </button>
-      </div>
-    }
-  } @else {
-    <app-empty-state icon="📦" title="No products in this category" />
+        } @else {
+          <app-empty-state icon="📦" title="No products in this category" />
+        }
+      </section>
+    </div>
   }
 </div>

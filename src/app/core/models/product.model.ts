@@ -1,5 +1,7 @@
 export interface Category {
   id: number;
+  department_id: number | null;
+  department_name: string | null;
   name: string;
   icon: string | null;
   image_url: string | null;
@@ -57,6 +59,8 @@ export interface Product {
   subcategory_id: number;
   name: string;
   brand: string | null;
+  manufacturer?: string | null;
+  marketer?: string | null;
   // Only present where the query joins vendors_t (product detail, similar products) -- plain
   // catalog listings don't carry it.
   vendor_name?: string;
@@ -84,11 +88,17 @@ export interface Product {
 export interface ProductDetail extends Product {
   variants: ProductVariant[];
   images: ProductImage[];
+  product_code: string | null;
+  expiry_date: string | null;
+  department_name: string | null;
+  category_name: string | null;
+  subcategory_name: string | null;
+  attributes: Record<string, unknown>;
+  attribute_list: { key: string; label: string; value: string }[];
   highlights: string[];
   description: string | null;
   storage_info: string | null;
   manufacturer_details: string | null;
-  expiry_date: string | null;
   energy_kcal: number | null;
   carbs_g: number | null;
   fat_g: number | null;
@@ -106,6 +116,7 @@ export interface ProductSizeOption {
   name: string;
   price: number;
   mrp: number | null;
+  unitPriceLabel: string | null;
   stockQty: number;
   isAvailable: boolean;
 }
@@ -116,6 +127,7 @@ export function buildSizeOptions(product: ProductDetail): ProductSizeOption[] {
     name: product.weight_label || 'Standard',
     price: product.price,
     mrp: product.mrp,
+    unitPriceLabel: product.unit_price_label,
     stockQty: product.stock_qty,
     isAvailable: product.is_available
   };
@@ -124,6 +136,7 @@ export function buildSizeOptions(product: ProductDetail): ProductSizeOption[] {
     name: v.name,
     price: v.price,
     mrp: v.mrp,
+    unitPriceLabel: v.unit_price_label,
     stockQty: v.stock_qty,
     isAvailable: v.is_available
   }));

@@ -1,30 +1,21 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
 
 import { OrgContextService } from '../../../core/services/org-context.service';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Banner, Category, Product, Subcategory } from '../../../core/models/product.model';
+import { Banner, Category, Product } from '../../../core/models/product.model';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { AppDownloadModalComponent } from '../../../shared/components/app-download-modal/app-download-modal.component';
 
-interface SubcategoryTile {
-  sub: Subcategory;
-  color: string;
-}
-
 interface CategorySection {
-  category: Category;
-  subcategories: SubcategoryTile[];
+  key: string;
+  departmentId: number | null;
+  departmentName: string;
+  categories: Category[];
 }
-
-// Pastel fallbacks for subcategories with no admin-set tint_color -- cycled across the whole
-// page (not reset per category) so tiles read as varied, like the reference design, rather than
-// a single flat grey everywhere.
-const TILE_PALETTE = ['#dcecd9', '#dceaf6', '#faeccb', '#e6e1f5', '#fbe0df', '#d9f0ea'];
 
 @Component({
   selector: 'app-home',
@@ -38,10 +29,16 @@ export class HomeComponent implements OnInit {
   private readonly auth = inject(AuthService);
 
   loading = true;
+  categoriesError = '';
   banners: Banner[] = [];
   categorySections: CategorySection[] = [];
   products: Product[] = [];
   showAppDownloadModal = false;
+  private storeCategoriesLoaded = false;
+  private storeCategories: Category[] = [];
+  private catalogProducts: Product[] = [];
+  private catalogProductsLoaded = false;
+  private fallbackCategoriesRequested = false;
 
   get orgCode(): string {
     return this.orgContext.getCurrentCode() ?? '';
@@ -49,26 +46,81 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     const orgId = this.orgContext.requireOrgId();
-    forkJoin({
-      banners: this.catalog.listBanners(orgId),
-      categories: this.catalog.listCategories(orgId),
-      subcategories: this.catalog.listSubcategories(orgId),
-      products: this.catalog.searchProducts(orgId, { limit: 16 })
-    }).subscribe({
-      next: ({ banners, categories, subcategories, products }) => {
-        this.banners = banners;
-        let colorCursor = 0;
-        this.categorySections = categories.map((category) => ({
-          category,
-          subcategories: subcategories
-            .filter((sub) => sub.category_id === category.id)
-            .map((sub) => ({ sub, color: sub.tint_color || TILE_PALETTE[colorCursor++ % TILE_PALETTE.length] }))
-        }));
-        this.products = products;
-        this.loading = false;
-        this.showAppDownloadModal = this.auth.consumeJustLoggedIn();
+    this.catalog.listCategories(orgId).subscribe({
+      next: (categories) => {
+        this.storeCategoriesLoaded = true;
+        this.storeCategories = categories;
+        this.applyCategories(categories);
       },
-      error: () => (this.loading = false)
+      error: () => {
+        this.storeCategoriesLoaded = true;
+        this.tryLoadCategoryFallback();
+      }
+    });
+
+    this.catalog.searchProducts(orgId, { limit: 50 }).subscribe({
+      next: (products) => {
+        this.catalogProducts = products;
+        this.catalogProductsLoaded = true;
+        this.products = products.slice(0, 16);
+        if (this.storeCategoriesLoaded && !this.storeCategories.length) {
+          this.tryLoadCategoryFallback();
+        }
+      },
+      error: () => {
+        this.catalogProductsLoaded = true;
+        if (this.storeCategoriesLoaded && !this.storeCategories.length) {
+          this.applyCategories([]);
+        }
+      }
+    });
+
+    this.catalog.listBanners(orgId).subscribe({
+      next: (banners) => (this.banners = banners),
+      error: () => (this.banners = [])
+    });
+    this.showAppDownloadModal = this.auth.consumeJustLoggedIn();
+  }
+
+  private applyCategories(categories: Category[]): void {
+    const sections = new Map<string, CategorySection>();
+    categories.forEach((category) => {
+      const departmentId = category.department_id ?? null;
+      const departmentName = category.department_name || 'Other';
+      const key = departmentId === null ? `name:${departmentName}` : `id:${departmentId}`;
+      let section = sections.get(key);
+      if (!section) {
+        section = { key, departmentId, departmentName, categories: [] };
+        sections.set(key, section);
+      }
+      section.categories.push(category);
+    });
+    this.categorySections = Array.from(sections.values());
+    this.categoriesError = '';
+    this.loading = false;
+  }
+
+  // Some API deployments still return an empty org-scoped category list. Fall back to the
+  // active taxonomy, but only show categories represented by this store's own products.
+  private tryLoadCategoryFallback(): void {
+    if (!this.catalogProductsLoaded) {
+      return;
+    }
+    if (this.fallbackCategoriesRequested) {
+      return;
+    }
+    this.fallbackCategoriesRequested = true;
+    const productCategoryIds = new Set(this.catalogProducts.map((product) => product.category_id));
+    if (!productCategoryIds.size) {
+      this.applyCategories([]);
+      return;
+    }
+    this.catalog.listCategories().subscribe({
+      next: (categories) => this.applyCategories(categories.filter((category) => productCategoryIds.has(category.id))),
+      error: () => {
+        this.categoriesError = 'Could not load this store’s categories. Please refresh and try again.';
+        this.loading = false;
+      }
     });
   }
 }

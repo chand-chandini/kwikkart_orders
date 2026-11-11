@@ -1,4 +1,4 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { switchMap } from 'rxjs';
 
@@ -22,7 +22,17 @@ import { OrgUnavailableComponent } from './org-unavailable.component';
       <div class="d-flex flex-column min-vh-100">
         <app-header [org]="orgContext.org()!" [orgCode]="code" />
         <main class="flex-grow-1">
-          <router-outlet />
+          @if (auth.currentUser() && !storeAccessReady()) {
+            @if (storeAccessError()) {
+              <div class="container py-4">
+                <div class="alert alert-warning mb-0" role="alert">{{ storeAccessError() }}</div>
+              </div>
+            } @else {
+              <app-spinner label="Connecting to store..." />
+            }
+          } @else {
+            <router-outlet />
+          }
         </main>
         <app-footer [orgCode]="code" />
         <app-floating-cart-bar [orgCode]="code" />
@@ -34,34 +44,46 @@ import { OrgUnavailableComponent } from './org-unavailable.component';
 })
 export class OrgShellComponent {
   readonly orgContext = inject(OrgContextService);
-  private readonly auth = inject(AuthService);
+  readonly auth = inject(AuthService);
   private readonly cart = inject(CartService);
   private readonly route = inject(ActivatedRoute);
 
   code = '';
+  readonly storeAccessReady = signal(false);
+  readonly storeAccessError = signal('');
   private joinedForOrgId: number | null = null;
+  private joinedForUserId: number | null = null;
 
   constructor() {
     this.route.paramMap.pipe(switchMap((params) => {
       this.code = params.get('code') ?? '';
+      this.storeAccessReady.set(false);
+      this.storeAccessError.set('');
       return this.orgContext.resolve(this.code);
     })).subscribe();
 
-    // Once the org resolves and the customer is signed in, redeem the same code as org
-    // membership so canShopOrg-gated catalog/cart/order calls succeed. Idempotent on the
-    // backend (already_member short-circuits), guarded here to run once per org/session.
+    // Wait for customer membership before mounting routes whose catalog requests require it.
     effect(() => {
       const org = this.orgContext.org();
       const user = this.auth.currentUser();
-      if (!org || !user || this.joinedForOrgId === org.id) {
+      if (!org || !user) {
+        return;
+      }
+      if (this.joinedForOrgId === org.id && this.joinedForUserId === user.id) {
+        this.storeAccessReady.set(true);
         return;
       }
       this.joinedForOrgId = org.id;
+      this.joinedForUserId = user.id;
       this.auth.redeemCode(this.code).subscribe({
-        next: () => this.cart.load(org.id).subscribe(),
-        error: () => {
-          // role_mismatch / exhausted codes still let the customer browse; cart/checkout calls
-          // will surface the real backend error if they truly can't shop here.
+        next: () => {
+          this.storeAccessReady.set(true);
+          this.cart.load(org.id).subscribe();
+        },
+        error: (error: { error?: { message?: string }; message?: string }) => {
+          this.storeAccessError.set(
+            error.error?.message || error.message || 'Could not connect to this store. Please try again.'
+          );
         }
       });
     });

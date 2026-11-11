@@ -80,15 +80,6 @@ export class AuthService {
       );
   }
 
-  // Every org this login already belongs to, newest-joined first -- used right after OTP
-  // verification to find a store this login is already a customer of, instead of asking a
-  // returning customer to retype a code they already gave once (landing.component.ts).
-  listMyOrgs(): Observable<MyOrgMembership[]> {
-    return this.http
-      .get<{ data: { orgs: MyOrgMembership[] } }>(`${environment.apiBaseUrl}/my/orgs`)
-      .pipe(map((res) => res.data.orgs));
-  }
-
   // /ecommerce/join, not the generic /roles/redeem -- same membership outcome, but doesn't
   // refuse an account that happens to run a vendor profile elsewhere (OrgShellComponent calls
   // this to silently join the /o/{code} link's org as a customer; see kkapi ecommerceCtrl.joinAsCustomer).

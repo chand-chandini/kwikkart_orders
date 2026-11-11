@@ -51,15 +51,10 @@
           </div>
         }
 
-        @if (product.rating_count || product.expiry_date) {
+        @if (product.rating_count) {
           <div class="mb-2 d-flex align-items-center flex-wrap gap-2">
-            @if (product.rating_count) {
-              <span class="badge bg-success">{{ product.rating_avg }} ★</span>
-              <span class="text-muted small">{{ product.rating_count }} ratings</span>
-            }
-            @if (product.expiry_date) {
-              <span class="badge bg-light text-dark border">Best before {{ product.expiry_date }}</span>
-            }
+            <span class="badge bg-success">{{ product.rating_avg }} ★</span>
+            <span class="text-muted small">{{ product.rating_count }} ratings</span>
           </div>
         }
 
@@ -68,7 +63,20 @@
           @if (effectiveMrp > effectivePrice) {
             <span class="text-muted text-decoration-line-through">{{ effectiveMrp | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
           }
+          @if (discountPercent > 0) {
+            <span class="badge text-bg-danger">{{ discountPercent }}% OFF</span>
+          }
         </div>
+        @if (effectiveUnitPriceLabel || expiryLabel) {
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-3 small">
+            @if (effectiveUnitPriceLabel) {
+              <span class="text-muted">{{ effectiveUnitPriceLabel }}</span>
+            }
+            @if (expiryLabel) {
+              <span class="badge text-bg-warning">Expiry {{ expiryLabel }}</span>
+            }
+          </div>
+        }
 
         @if (deliveryStatus) {
           <div class="pdp-delivery-status mb-3" [class.pdp-delivery-status--bad]="deliveryStatus === 'unavailable'">
@@ -101,6 +109,9 @@
                   <div class="fw-semibold">{{ option.name }}</div>
                   <div class="variant-option__price">
                     {{ option.price | currency: 'INR' : 'symbol' : '1.0-2' }}
+                    @if (option.unitPriceLabel) {
+                      <span class="d-block small text-muted">{{ option.unitPriceLabel }}</span>
+                    }
                     @if (!option.isAvailable || option.stockQty <= 0) {
                       · Out of stock
                     }
@@ -156,6 +167,53 @@
           <div class="info-card mt-3">
             <h6 class="fw-semibold">Description</h6>
             <p class="small text-muted mb-0">{{ product.description }}</p>
+          </div>
+        }
+
+        @if (product.product_code || product.manufacturer || product.marketer || product.department_name || product.category_name || product.subcategory_name || product.other_price_min != null || product.other_price_max != null || product.attribute_list.length) {
+          <div class="info-card mt-3">
+            <h6 class="fw-semibold">Product Details</h6>
+            <dl class="product-details-list small mb-0">
+              @if (product.product_code) {
+                <div><dt>Product Code</dt><dd>{{ product.product_code }}</dd></div>
+              }
+              @if (product.manufacturer) {
+                <div><dt>Manufacturer</dt><dd>{{ product.manufacturer }}</dd></div>
+              }
+              @if (product.marketer) {
+                <div><dt>Marketer</dt><dd>{{ product.marketer }}</dd></div>
+              }
+              @if (product.department_name) {
+                <div><dt>Department</dt><dd>{{ product.department_name }}</dd></div>
+              }
+              @if (product.category_name) {
+                <div><dt>Category</dt><dd>{{ product.category_name }}</dd></div>
+              }
+              @if (product.subcategory_name) {
+                <div><dt>Subcategory</dt><dd>{{ product.subcategory_name }}</dd></div>
+              }
+              @if (selectedOption?.variantId == null && (product.other_price_min != null || product.other_price_max != null)) {
+                <div>
+                  <dt>Other App Price</dt>
+                  <dd>
+                    @if (product.other_price_min != null) {
+                      {{ product.other_price_min | currency: 'INR' : 'symbol' : '1.0-2' }}
+                    } @else {
+                      —
+                    }
+                    –
+                    @if (product.other_price_max != null) {
+                      {{ product.other_price_max | currency: 'INR' : 'symbol' : '1.0-2' }}
+                    } @else {
+                      —
+                    }
+                  </dd>
+                </div>
+              }
+              @for (detail of product.attribute_list; track detail.key) {
+                <div><dt>{{ detail.label }}</dt><dd>{{ detail.value }}</dd></div>
+              }
+            </dl>
           </div>
         }
 

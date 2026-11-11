@@ -21,6 +21,8 @@ const SERVICEABILITY_MESSAGES: Record<string, string> = {
   no_delivery_radius: "the seller hasn't set a delivery area yet"
 };
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -58,6 +60,29 @@ export class ProductDetailComponent implements OnInit {
 
   get effectiveMrp(): number {
     return this.selectedOption?.mrp ?? this.product?.mrp ?? 0;
+  }
+
+  get effectiveUnitPriceLabel(): string | null {
+    return this.selectedOption?.unitPriceLabel ?? null;
+  }
+
+  get discountPercent(): number {
+    const mrp = this.effectiveMrp;
+    const price = this.effectivePrice;
+    return mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+  }
+
+  get expiryLabel(): string | null {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(this.product?.expiry_date ?? '');
+    if (!match) {
+      return null;
+    }
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      return null;
+    }
+    return `${day} ${MONTHS[month - 1]} ${match[1]}`;
   }
 
   get inStock(): boolean {

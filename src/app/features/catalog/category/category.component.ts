@@ -1,10 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { switchMap } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin, switchMap } from 'rxjs';
 
 import { OrgContextService } from '../../../core/services/org-context.service';
 import { CatalogService } from '../../../core/services/catalog.service';
-import { Product, Subcategory } from '../../../core/models/product.model';
+import { Category, Product, Subcategory } from '../../../core/models/product.model';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
@@ -12,22 +13,26 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
 @Component({
   selector: 'app-category',
   standalone: true,
-  imports: [ProductCardComponent, SpinnerComponent, EmptyStateComponent],
+  imports: [FormsModule, RouterLink, ProductCardComponent, SpinnerComponent, EmptyStateComponent],
   templateUrl: './category.component.html'
 })
 export class CategoryComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly orgContext = inject(OrgContextService);
   private readonly catalog = inject(CatalogService);
+  private readonly router = inject(Router);
 
   loading = true;
   loadingMore = false;
+  category: Category | null = null;
   categoryId = 0;
   subcategories: Subcategory[] = [];
   activeSubcategoryId: number | null = null;
+  searchQuery = '';
   products: Product[] = [];
   page = 1;
   hasMore = true;
+  private categoryDataReady = false;
 
   get orgCode(): string {
     return this.orgContext.getCurrentCode() ?? '';
@@ -36,14 +41,33 @@ export class CategoryComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.pipe(switchMap((params) => {
       this.categoryId = Number(params.get('categoryId'));
-      this.activeSubcategoryId = Number(this.route.snapshot.queryParamMap.get('sub')) || null;
+      this.categoryDataReady = false;
       this.page = 1;
       this.loading = true;
       const orgId = this.orgContext.requireOrgId();
-      return this.catalog.listSubcategories(orgId, this.categoryId);
+      return forkJoin({
+        categories: this.catalog.listCategories(orgId),
+        subcategories: this.catalog.listSubcategories(orgId, this.categoryId)
+      });
     })).subscribe((subs) => {
-      this.subcategories = subs;
+      this.category = subs.categories.find((category) => category.id === this.categoryId) ?? null;
+      this.subcategories = subs.subcategories;
+      this.categoryDataReady = true;
+      this.activeSubcategoryId = Number(this.route.snapshot.queryParamMap.get('sub')) || null;
       this.fetchProducts();
+    });
+
+    this.route.queryParamMap.subscribe((params) => {
+      if (!this.categoryDataReady) {
+        return;
+      }
+      const selectedId = Number(params.get('sub')) || null;
+      if (this.activeSubcategoryId !== selectedId) {
+        this.activeSubcategoryId = selectedId;
+        this.page = 1;
+        this.loading = true;
+        this.fetchProducts();
+      }
     });
   }
 
@@ -54,7 +78,19 @@ export class CategoryComponent implements OnInit {
     this.activeSubcategoryId = id;
     this.page = 1;
     this.loading = true;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { sub: id },
+      queryParamsHandling: 'merge'
+    });
     this.fetchProducts();
+  }
+
+  search(): void {
+    const query = this.searchQuery.trim();
+    if (query) {
+      this.router.navigate(['/o', this.orgCode, 'search'], { queryParams: { q: query } });
+    }
   }
 
   loadMore(): void {

@@ -9,11 +9,13 @@ import { Banner, Category, Product, ProductDetail, ProductListFilters, Subcatego
 export class CatalogService {
   constructor(private http: HttpClient) {}
 
-  listCategories(orgId: number): Observable<Category[]> {
+  listCategories(orgId?: number): Observable<Category[]> {
+    let params = new HttpParams();
+    if (orgId != null) {
+      params = params.set('org_id', orgId);
+    }
     return this.http
-      .get<{ data: { categories: Category[] } }>(`${environment.apiBaseUrl}/ecommerce/categories`, {
-        params: { org_id: orgId }
-      })
+      .get<{ data: { categories: Category[] } }>(`${environment.apiBaseUrl}/ecommerce/categories`, { params })
       .pipe(map((res) => res.data.categories));
   }
 
