@@ -1,0 +1,57 @@
+<div class="filter-panel">
+  <div class="filter-panel__header">
+    <span class="filter-panel__title">Filters</span>
+    @if (hasActiveFilters) {
+      <button type="button" class="btn btn-link btn-sm p-0 ms-auto" (click)="clearAll()">Clear all</button>
+    }
+  </div>
+
+  <div class="filter-panel__section">
+    <div class="filter-panel__section-title">Price</div>
+    <div class="d-flex gap-2 align-items-center">
+      <input
+        type="number"
+        class="form-control form-control-sm"
+        placeholder="Min"
+        min="0"
+        [(ngModel)]="priceMinInput"
+        name="priceMin"
+      />
+      <span class="text-muted">–</span>
+      <input
+        type="number"
+        class="form-control form-control-sm"
+        placeholder="Max"
+        min="0"
+        [(ngModel)]="priceMaxInput"
+        name="priceMax"
+      />
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-brand mt-2 w-100" (click)="applyPrice()">Apply</button>
+    @if (facets?.price_min != null && facets?.price_max != null) {
+      <div class="small text-muted mt-1">Available: ₹{{ facets!.price_min }} – ₹{{ facets!.price_max }}</div>
+    }
+  </div>
+
+  <div class="filter-panel__section">
+    <div class="filter-panel__section-title">Discount</div>
+    @for (bucket of discountBuckets; track bucket) {
+      <label class="filter-panel__check">
+        <input type="checkbox" [checked]="filters.minDiscount === bucket" (change)="selectDiscount(bucket)" />
+        {{ bucket }}% or more
+      </label>
+    }
+  </div>
+
+  @if (facets?.brands?.length) {
+    <div class="filter-panel__section">
+      <div class="filter-panel__section-title">Brand</div>
+      @for (b of facets!.brands; track b.name) {
+        <label class="filter-panel__check">
+          <input type="checkbox" [checked]="isBrandChecked(b.name)" (change)="toggleBrand(b.name)" />
+          {{ b.name }} <span class="text-muted">({{ b.count }})</span>
+        </label>
+      }
+    </div>
+  }
+</div>

@@ -174,7 +174,7 @@ a {
 
 .category-browse__layout {
   display: grid;
-  grid-template-columns: 140px minmax(0, 1fr);
+  grid-template-columns: 140px 220px minmax(0, 1fr);
   min-height: 65vh;
   border-top: 1px solid #e5e7eb;
 }
@@ -183,7 +183,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 8px 12px 0;
+  padding: 16px 8px 12px 0;
   border-right: 1px solid #e5e7eb;
 }
 
@@ -271,6 +271,14 @@ a {
     padding: 10px 0;
     border-right: 0;
     border-bottom: 1px solid #e5e7eb;
+  }
+
+  // Filters column collapses behind the toolbar's "Filters" button below ~768px (see the
+  // shared media query further down) -- order: 0 puts it right after the subcategory rail,
+  // above the product grid, when toggled open.
+  .category-browse__filters,
+  .search-results__filters {
+    order: 0;
   }
 
   .category-browse__subcategory {
@@ -596,4 +604,276 @@ a {
 .auth-otp-input {
   font-size: 1.5rem;
   letter-spacing: 0.5rem;
+}
+
+// Seller/platform coupon rows (cart page + checkout summary) -- applied/not-applied/action states
+// ported from kkpublicapp's CheckoutScreen.jsx coupon rows.
+.coupon-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.25rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+
+  &--action {
+    cursor: pointer;
+
+    &:hover {
+      background: #f8f9fa;
+    }
+  }
+
+  &--ok {
+    .coupon-row__icon {
+      color: var(--kk-brand-primary);
+    }
+  }
+
+  &--bad {
+    .coupon-row__icon {
+      color: #b45309;
+    }
+  }
+}
+
+.coupon-row__icon {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.coupon-row__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.coupon-card--disabled {
+  opacity: 0.6;
+}
+
+// ---- Product listing filters/sort (category + search pages) ----
+
+.badge-brand {
+  background: var(--kk-brand-primary);
+  color: #fff;
+}
+
+.product-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.product-toolbar__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+
+.product-toolbar__filters-btn {
+  display: none; // only meaningful once the filter panel can be hidden -- see the breakpoint below
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.product-toolbar__sort {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+
+  .form-select {
+    width: auto;
+  }
+}
+
+.filter-panel {
+  // Left inset so the panel's content doesn't sit flush against the subcategory rail's
+  // border-right (or the sheet edge in the mobile drawer) -- the wrapper (.category-browse__filters
+  // / .search-results__filters) only handles vertical alignment with its siblings, not this.
+  padding: 0 16px 16px 16px;
+}
+
+.filter-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.filter-panel__title {
+  font-weight: 650;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--kk-brand-text);
+}
+
+.filter-panel__section {
+  padding: 12px 0;
+  border-top: 1px solid #eef0f2;
+
+  &:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+.filter-panel__section-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.filter-panel__check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  padding: 4px 0;
+  cursor: pointer;
+
+  input {
+    cursor: pointer;
+  }
+}
+
+// Search results: filter panel + product grid, same two-column idea as the category page's
+// three-column layout (subcategory rail + filters + products) minus the rail. Top padding
+// matches .category-browse__sidebar/__products (16px) so all columns start on the same line.
+.search-results__layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 20px;
+}
+
+.search-results__filters {
+  padding-top: 16px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.category-browse__filters {
+  padding-top: 16px;
+}
+
+// The filter panel's drawer chrome (title bar + close + "Show results" footer) is mobile-only
+// scaffolding around <app-product-filter-panel> -- on desktop the panel is a permanent sidebar
+// with no need to close it, so this chrome stays hidden there (see the breakpoint below).
+.filter-drawer__sheet {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-drawer__header,
+.filter-drawer__footer {
+  display: none;
+}
+
+.filter-drawer__body {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+// Below ~768px the filter panel becomes a bottom-sheet drawer (fixed, dimmed backdrop, slides
+// up from the bottom) behind the toolbar's "Filters" button, instead of a permanent sidebar
+// eating width next to a cramped product grid -- same breakpoint the category rail goes
+// horizontal at, and the same fixed-overlay + header/close/footer convention as
+// location-picker-modal.component.scss.
+@media (max-width: 767.98px) {
+  .product-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .product-toolbar__filters-btn {
+    display: inline-flex;
+  }
+
+  .product-toolbar__sort {
+    margin-left: 0;
+    justify-content: space-between;
+  }
+
+  .category-browse__filters,
+  .search-results__filters {
+    display: none;
+  }
+
+  .category-browse__filters--open,
+  .search-results__filters--open {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 1065;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: rgba(17, 20, 24, 0.55);
+  }
+
+  .filter-drawer__sheet {
+    width: 100%;
+    max-height: 85vh;
+    background: var(--kk-brand-surface, #fff);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  .filter-drawer__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #edf0f3;
+    flex-shrink: 0;
+  }
+
+  .filter-drawer__title {
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  // The sheet's own header above already says "Filters" -- the panel's own title would just
+  // repeat it right below.
+  .filter-drawer__body .filter-panel__title {
+    display: none;
+  }
+
+  .filter-drawer__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--kk-brand-bg, #f1f1f1);
+    color: var(--kk-brand-muted, #6b7280);
+    cursor: pointer;
+  }
+
+  .filter-drawer__body {
+    overflow-y: auto; // horizontal inset comes from .filter-panel's own padding, same as desktop
+  }
+
+  .filter-drawer__footer {
+    display: block;
+    flex-shrink: 0;
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid #edf0f3;
+  }
+
+  .search-results__layout {
+    display: block;
+  }
 }

@@ -207,30 +207,40 @@
         <div class="card">
           <div class="card-body">
             <h6 class="fw-semibold mb-3">Order summary</h6>
-            <!-- Coupons disabled for now (2026-10-29, pending go-live decision).
-            <div class="input-group mb-3">
-              <input class="form-control" placeholder="Coupon code" [(ngModel)]="couponCode" name="coupon" />
-              <button class="btn btn-outline-brand" type="button" (click)="applyCoupon()">Apply</button>
-            </div>
-            -->
+            @if (coupons.platformApplied() || coupons.appliedSellerCoupons().length) {
+              <div class="small text-success mb-2">
+                Coupon{{ coupons.appliedSellerCoupons().length + (coupons.platformApplied() ? 1 : 0) > 1 ? 's' : '' }} applied
+                <a [routerLink]="['/o', orgCode, 'cart']" class="ms-1">Change</a>
+              </div>
+            } @else {
+              <div class="small text-muted mb-2">
+                Have a coupon? <a [routerLink]="['/o', orgCode, 'cart']">Apply it from your cart</a>
+              </div>
+            }
             <div class="d-flex justify-content-between mb-2">
               <span class="text-muted">Items total</span>
               <span>{{ cartService.cart().items_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
             </div>
+            @if (coupons.sellerDiscountTotal() > 0) {
+              <div class="d-flex justify-content-between mb-2 text-success">
+                <span>Seller discount</span>
+                <span>-{{ coupons.sellerDiscountTotal() | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+              </div>
+            }
+            @if (coupons.platformDiscount() > 0) {
+              <div class="d-flex justify-content-between mb-2 text-success">
+                <span>Coupon discount</span>
+                <span>-{{ coupons.platformDiscount() | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+              </div>
+            }
             <div class="d-flex justify-content-between mb-2">
               <span class="text-muted">Delivery</span>
               <span>{{ cartService.cart().delivery_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
             </div>
-            @if (couponDiscount) {
-              <div class="d-flex justify-content-between mb-2 text-success">
-                <span>Coupon discount</span>
-                <span>-{{ couponDiscount | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
-              </div>
-            }
             <hr />
             <div class="d-flex justify-content-between fw-bold mb-3">
               <span>Total payable</span>
-              <span>{{ cartService.cart().grand_total - couponDiscount | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+              <span>{{ (coupons.quote()?.grand_total ?? cartService.cart().grand_total) | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
             </div>
             @if (checkoutError) {
               <div class="alert alert-danger small">{{ checkoutError }}</div>

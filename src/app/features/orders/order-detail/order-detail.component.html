@@ -49,6 +49,12 @@
             <span>Items</span>
             <span class="fw-semibold text-dark">{{ vo.items_total | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
           </div>
+          @if (vo.seller_discount_amount > 0) {
+            <div class="d-flex justify-content-between text-success">
+              <span>Seller coupon{{ vo.seller_coupon_code ? ' (' + vo.seller_coupon_code + ')' : '' }}</span>
+              <span class="fw-semibold">-{{ vo.seller_discount_amount | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+          }
           <div class="d-flex justify-content-between text-muted">
             <span>Delivery</span>
             <span class="fw-semibold text-dark">{{ vo.delivery_charge | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
@@ -112,6 +118,18 @@
         <span class="text-muted">Items total</span>
         <span class="fw-semibold">{{ itemsTotal | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
       </div>
+      @if (couponDiscount > 0) {
+        <div class="d-flex justify-content-between align-items-center py-1 text-success">
+          <span>Coupon discount{{ couponCode ? ' (' + couponCode + ')' : '' }}</span>
+          <span class="fw-semibold">-{{ couponDiscount | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+        </div>
+      }
+      @if (sellerDiscountTotal > 0) {
+        <div class="d-flex justify-content-between align-items-center py-1 text-success">
+          <span>Seller coupon discount</span>
+          <span class="fw-semibold">-{{ sellerDiscountTotal | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+        </div>
+      }
       <div class="d-flex justify-content-between align-items-center py-1">
         <span class="text-muted">Delivery</span>
         <span class="fw-semibold">{{ deliveryTotal | currency: 'INR' : 'symbol' : '1.0-2' }}</span>

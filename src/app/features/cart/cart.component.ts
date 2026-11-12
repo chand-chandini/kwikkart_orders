@@ -1,10 +1,13 @@
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
 import { OrgContextService } from '../../core/services/org-context.service';
 import { CartService } from '../../core/services/cart.service';
+import { CartCouponsService } from '../../core/services/cart-coupons.service';
 import { CartItem, CartVendorGroup } from '../../core/models/cart.model';
+import { SellerCouponQuote } from '../../core/models/coupon.model';
 import { AppError } from '../../core/models/api-error.model';
 import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
@@ -13,24 +16,35 @@ import { QtyStepperComponent } from '../../shared/components/qty-stepper/qty-ste
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CurrencyPipe, RouterLink, SpinnerComponent, EmptyStateComponent, QtyStepperComponent],
+  imports: [CurrencyPipe, DecimalPipe, FormsModule, RouterLink, SpinnerComponent, EmptyStateComponent, QtyStepperComponent],
   templateUrl: './cart.component.html'
 })
 export class CartComponent implements OnInit {
   private readonly orgContext = inject(OrgContextService);
   readonly cartService = inject(CartService);
+  readonly coupons = inject(CartCouponsService);
   private readonly router = inject(Router);
 
   loading = true;
   busyItemId: number | null = null;
+  couponInput = '';
+  couponVendorSheet: number | null = null; // vendor id whose coupon list is open, if any
+  sheetCode = '';
 
   get orgCode(): string {
     return this.orgContext.getCurrentCode() ?? '';
   }
 
+  private get orgId(): number {
+    return this.orgContext.requireOrgId();
+  }
+
   ngOnInit(): void {
-    this.cartService.load(this.orgContext.requireOrgId()).subscribe({
-      next: () => (this.loading = false),
+    this.cartService.load(this.orgId).subscribe({
+      next: () => {
+        this.loading = false;
+        this.coupons.attach(this.orgId);
+      },
       error: () => (this.loading = false)
     });
   }
@@ -76,5 +90,76 @@ export class CartComponent implements OnInit {
 
   checkout(): void {
     this.router.navigate(['/o', this.orgCode, 'checkout']);
+  }
+
+  // ---- coupons (ported from kkpublicapp's CheckoutScreen.jsx cart section, 2026-11-19) ----
+
+  // This line's share of its seller's coupon discount -- 0 once the item total is 0 (removed).
+  couponOff(item: CartItem): number {
+    const lineTotal = this.lineTotal(item);
+    return lineTotal > 0 ? this.coupons.itemDiscount(item.id) : 0;
+  }
+
+  availableCount(vendorId: number): number {
+    return this.coupons.couponsFor(vendorId).filter((c) => c.applicable).length;
+  }
+
+  hasCoupons(vendorId: number): boolean {
+    return this.coupons.couponsFor(vendorId).length > 0;
+  }
+
+  chosenSellerCode(vendorId: number): string | undefined {
+    return this.coupons.sellerCodes()[vendorId];
+  }
+
+  sellerCoupon(vendorId: number): SellerCouponQuote | null {
+    return this.coupons.quoteFor(vendorId)?.coupon ?? null;
+  }
+
+  // The quote hasn't caught up with the code just chosen yet (debounced server round trip).
+  sellerCouponPending(vendorId: number): boolean {
+    const q = this.sellerCoupon(vendorId);
+    return !q || q.code !== this.chosenSellerCode(vendorId);
+  }
+
+  sellerCouponOk(vendorId: number): boolean {
+    return !this.sellerCouponPending(vendorId) && !!this.sellerCoupon(vendorId)?.applied;
+  }
+
+  // The single "Have a coupon?" box: typing a seller's own code applies it to that seller,
+  // anything else is tried as a platform coupon on whatever is left.
+  applyCode(): void {
+    const code = this.couponInput.trim();
+    if (!code) return;
+    this.coupons.applyCode(this.orgId, code);
+    this.couponInput = '';
+  }
+
+  openCouponSheet(vendorId: number): void {
+    this.couponVendorSheet = vendorId;
+    this.sheetCode = '';
+  }
+
+  closeCouponSheet(): void {
+    this.couponVendorSheet = null;
+    this.sheetCode = '';
+  }
+
+  pickSellerCoupon(vendorId: number, code: string): void {
+    this.coupons.applySellerCoupon(this.orgId, vendorId, code);
+    this.closeCouponSheet();
+  }
+
+  applySheetCode(): void {
+    if (this.couponVendorSheet == null || !this.sheetCode.trim()) return;
+    this.pickSellerCoupon(this.couponVendorSheet, this.sheetCode);
+  }
+
+  removeSellerCoupon(vendorId: number): void {
+    this.coupons.removeSellerCoupon(this.orgId, vendorId);
+  }
+
+  removePlatformCode(): void {
+    this.coupons.removePlatformCode(this.orgId);
   }
 }

@@ -9,7 +9,13 @@ import { AppError } from '../models/api-error.model';
 
 // Errors that components surface inline (validation state, retry UI) rather than as a toast —
 // a global "out of stock" popup on top of an inline badge would just be noise.
-const SILENT_CODES = new Set(['out_of_stock', 'insufficient_stock', 'address_location_required', 'not_serviceable']);
+const SILENT_CODES = new Set([
+  'out_of_stock',
+  'insufficient_stock',
+  'address_location_required',
+  'not_serviceable',
+  'coupon_invalid'
+]);
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);

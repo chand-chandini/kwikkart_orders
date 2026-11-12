@@ -1,10 +1,11 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { OrgContextService } from '../../core/services/org-context.service';
 import { CartService } from '../../core/services/cart.service';
+import { CartCouponsService } from '../../core/services/cart-coupons.service';
 import { CheckoutService } from '../../core/services/checkout.service';
 import { PaymentsService } from '../../core/services/payments.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -45,12 +46,13 @@ const EMPTY_ADDRESS: AddressPayload = {
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [FormsModule, CurrencyPipe, SpinnerComponent, LocationPickerModalComponent],
+  imports: [FormsModule, CurrencyPipe, RouterLink, SpinnerComponent, LocationPickerModalComponent],
   templateUrl: './checkout.component.html'
 })
 export class CheckoutComponent implements OnInit {
   private readonly orgContext = inject(OrgContextService);
   readonly cartService = inject(CartService);
+  readonly coupons = inject(CartCouponsService);
   private readonly checkout = inject(CheckoutService);
   private readonly payments = inject(PaymentsService);
   private readonly auth = inject(AuthService);
@@ -64,8 +66,6 @@ export class CheckoutComponent implements OnInit {
   slots: DeliverySlot[] = [];
   selectedSlotId: number | null = null;
   paymentMethod: PaymentMethod = 'cod';
-  couponCode = '';
-  couponDiscount = 0;
   instructions = '';
 
   showAddressForm = false;
@@ -118,7 +118,12 @@ export class CheckoutComponent implements OnInit {
     });
     this.checkout.listDeliverySlots().subscribe((slots) => (this.slots = slots));
     this.cartService.load(orgId).subscribe({
-      next: () => (this.loading = false),
+      next: () => {
+        this.loading = false;
+        // Normally already attached from the cart page -- this covers landing on checkout
+        // directly (a bookmark, a refresh) where that never happened.
+        this.coupons.attach(orgId);
+      },
       error: () => (this.loading = false)
     });
     if (!this.codEnabled && this.onlineEnabled) {
@@ -190,19 +195,6 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  applyCoupon(): void {
-    if (!this.couponCode.trim()) {
-      return;
-    }
-    this.checkout.validateCoupon(this.couponCode.trim(), this.cartService.cart().items_total).subscribe({
-      next: (result) => {
-        this.couponDiscount = result.discount_amount;
-        this.toast.success(`Coupon applied: -${result.discount_amount}`);
-      },
-      error: () => (this.couponDiscount = 0)
-    });
-  }
-
   placeOrder(): void {
     if (!this.selectedAddressId) {
       this.toast.error('Please select or add a delivery address.');
@@ -217,7 +209,8 @@ export class CheckoutComponent implements OnInit {
         payment_method: this.paymentMethod,
         delivery_slot_id: this.selectedSlotId ?? undefined,
         org_id: this.orgContext.requireOrgId(),
-        coupon_code: this.couponCode.trim() || undefined,
+        coupon_code: this.coupons.platformApplied() ? this.coupons.platformCode() ?? undefined : undefined,
+        seller_coupons: this.coupons.appliedSellerCoupons(),
         instructions: this.instructions.trim() || undefined
       })
       .subscribe({
@@ -259,6 +252,13 @@ export class CheckoutComponent implements OnInit {
         this.checkoutError = err.message;
         // Stock changed server-side since the page loaded -- resync so qty/availability reflect it.
         this.cartService.load(this.orgContext.requireOrgId(), this.selectedAddressId ?? undefined).subscribe();
+        break;
+      case 'coupon_invalid':
+        // A coupon stopped applying between the last preview and placing the order (expired,
+        // used up, cart fell below its minimum) -- re-price so the cart/checkout pages show why,
+        // same as kkpublicapp's CheckoutScreen does on this code.
+        this.checkoutError = err.message;
+        this.coupons.attach(this.orgContext.requireOrgId());
         break;
       default:
         break;

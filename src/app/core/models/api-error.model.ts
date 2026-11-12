@@ -4,6 +4,7 @@ export type ApiErrorCode =
   | 'unavailable'
   | 'address_location_required'
   | 'not_serviceable'
+  | 'coupon_invalid'
   | 'role_mismatch';
 
 export interface AppError {

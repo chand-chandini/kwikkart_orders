@@ -1,4 +1,5 @@
 import { Address } from './address.model';
+import { SellerCouponRequest } from './coupon.model';
 
 export type PaymentMethod = 'cod' | 'online';
 
@@ -8,6 +9,7 @@ export interface OrderCreateRequest {
   delivery_slot_id?: number;
   org_id?: number;
   coupon_code?: string;
+  seller_coupons?: SellerCouponRequest[];
   instructions?: string;
   use_wallet?: boolean;
 }
@@ -95,6 +97,11 @@ export interface ParentOrderVendorEntry {
   vendor_name: string;
   status: number;
   items_total: number;
+  // This vendor order's own share of the platform coupon's discount (seller_discount_amount is
+  // its own seller coupon's discount, shown with seller_coupon_code).
+  discount_amount: number;
+  seller_coupon_code: string | null;
+  seller_discount_amount: number;
   delivery_charge: number;
   grand_total: number;
   items: OrderLineItem[];
@@ -107,6 +114,10 @@ export interface ParentOrder {
   order_number: string;
   items_total: number;
   discount_amount: number;
+  // The platform coupon's code text (null when none was applied) -- seller coupons are per
+  // vendor order instead, see ParentOrderVendorEntry.seller_coupon_code.
+  coupon_code: string | null;
+  seller_discount_amount: number;
   delivery_charge: number;
   handling_charge: number;
   grand_total: number;
@@ -123,6 +134,10 @@ export interface OrderDetail {
   vendor_name: string;
   status: number;
   items_total: number;
+  discount_amount: number;
+  coupon_code: string | null;
+  seller_coupon_code: string | null;
+  seller_discount_amount: number;
   delivery_charge: number;
   grand_total: number;
   placed_at: string;
@@ -137,11 +152,6 @@ export interface DeliverySlot {
   label: string;
   start_time: string;
   end_time: string;
-}
-
-export interface CouponResult {
-  discount_amount: number;
-  code: string;
 }
 
 export interface WalletTransaction {

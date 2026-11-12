@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { Banner, Category, Product, ProductDetail, ProductListFilters, Subcategory } from '../models/product.model';
+import { Banner, Category, Product, ProductDetail, ProductFilterFacets, ProductListFilters, Subcategory } from '../models/product.model';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
@@ -45,9 +45,30 @@ export class CatalogService {
     if (filters.limit) params = params.set('limit', filters.limit);
     if (filters.lat != null) params = params.set('lat', filters.lat);
     if (filters.lng != null) params = params.set('lng', filters.lng);
+    if (filters.brands?.length) params = params.set('brand', filters.brands.join(','));
+    if (filters.minPrice != null) params = params.set('min_price', filters.minPrice);
+    if (filters.maxPrice != null) params = params.set('max_price', filters.maxPrice);
+    if (filters.minDiscount != null) params = params.set('min_discount', filters.minDiscount);
+    if (filters.sort && filters.sort !== 'relevance') params = params.set('sort', filters.sort);
     return this.http
       .get<{ data: { products: Product[] } }>(`${environment.apiBaseUrl}/ecommerce/products`, { params })
       .pipe(map((res) => res.data.products));
+  }
+
+  // The brand checkbox list + price range for a listing's current category/subcategory/search
+  // scope -- NOT its brand/price/discount/sort selections (see ProductFilterFacets' own comment).
+  getProductFilters(
+    orgId: number,
+    scope: { categoryId?: number; subcategoryId?: number; vendorId?: number; q?: string } = {}
+  ): Observable<ProductFilterFacets> {
+    let params = new HttpParams().set('org_id', orgId);
+    if (scope.categoryId) params = params.set('category_id', scope.categoryId);
+    if (scope.subcategoryId) params = params.set('subcategory_id', scope.subcategoryId);
+    if (scope.vendorId) params = params.set('vendor_id', scope.vendorId);
+    if (scope.q) params = params.set('q', scope.q);
+    return this.http
+      .get<{ data: ProductFilterFacets }>(`${environment.apiBaseUrl}/ecommerce/products/filters`, { params })
+      .pipe(map((res) => res.data));
   }
 
   getProduct(productId: number): Observable<ProductDetail> {

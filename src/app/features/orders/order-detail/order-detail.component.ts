@@ -51,6 +51,9 @@ export class OrderDetailComponent implements OnInit {
           vendor_name: o.vendor_name,
           status: o.status,
           items_total: o.items_total,
+          discount_amount: o.discount_amount,
+          seller_coupon_code: o.seller_coupon_code,
+          seller_discount_amount: o.seller_discount_amount,
           delivery_charge: o.delivery_charge,
           grand_total: o.grand_total,
           items: o.items,
@@ -90,6 +93,23 @@ export class OrderDetailComponent implements OnInit {
 
   get grandTotal(): number {
     return this.parentOrder?.grand_total ?? this.singleOrder?.grand_total ?? 0;
+  }
+
+  get sellerDiscountTotal(): number {
+    return this.parentOrder?.seller_discount_amount ?? this.singleOrder?.seller_discount_amount ?? 0;
+  }
+
+  // discount_amount is the COMBINED platform+seller discount (createOrder sums them before
+  // storing it, same figure grand_total was computed from) -- subtracting the seller portion
+  // back out is what isolates the platform coupon's own share, so showing this alongside
+  // sellerDiscountTotal adds up to discount_amount rather than double-counting the seller part.
+  get couponDiscount(): number {
+    const combined = this.parentOrder?.discount_amount ?? this.singleOrder?.discount_amount ?? 0;
+    return Math.round((combined - this.sellerDiscountTotal) * 100) / 100;
+  }
+
+  get couponCode(): string | null {
+    return this.parentOrder?.coupon_code ?? this.singleOrder?.coupon_code ?? null;
   }
 
   private get paymentMethod(): string | undefined {

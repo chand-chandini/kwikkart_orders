@@ -143,6 +143,22 @@ export function buildSizeOptions(product: ProductDetail): ProductSizeOption[] {
   return [base, ...variantOptions];
 }
 
+// Mirrors kkapi public_app ecommerceModel.js#searchProducts' opts.sort -- 'relevance' is the
+// default (today's unchanged is_ad DESC, rating_avg DESC, id ordering), everything else is a
+// user-chosen sort.
+export type ProductSort = 'relevance' | 'price_asc' | 'price_desc' | 'discount' | 'newest';
+
+export const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
+  { value: 'relevance', label: 'Relevance' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+  { value: 'discount', label: 'Discount: High to Low' },
+  { value: 'newest', label: 'Newest First' }
+];
+
+// Flipkart-style preset buckets ("10% or more") rather than a free-form percentage input.
+export const DISCOUNT_BUCKETS = [10, 20, 30, 40, 50];
+
 export interface ProductListFilters {
   vendorId?: number;
   categoryId?: number;
@@ -152,4 +168,37 @@ export interface ProductListFilters {
   limit?: number;
   lat?: number;
   lng?: number;
+  brands?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  minDiscount?: number;
+  sort?: ProductSort;
+}
+
+// GET /ecommerce/products/filters -- the brand checkbox list (with how many listings each has)
+// and the price range, scoped to whatever category/subcategory/search the listing page is
+// showing. Stays stable while the buyer picks filters (see kkapi's getProductFilterFacets);
+// only re-fetched when the category/subcategory/search term itself changes.
+export interface ProductFilterFacets {
+  brands: { name: string; count: number }[];
+  price_min: number | null;
+  price_max: number | null;
+}
+
+// The buyer's current filter/sort choices for a listing page -- owned by the page component,
+// read/written by ProductSortBarComponent and ProductFilterPanelComponent via inputs/outputs.
+export interface ProductFilterState {
+  sort: ProductSort;
+  brands: string[];
+  minPrice: number | null;
+  maxPrice: number | null;
+  minDiscount: number | null;
+}
+
+export function emptyProductFilterState(): ProductFilterState {
+  return { sort: 'relevance', brands: [], minPrice: null, maxPrice: null, minDiscount: null };
+}
+
+export function activeFilterCount(f: ProductFilterState): number {
+  return f.brands.length + (f.minPrice != null || f.maxPrice != null ? 1 : 0) + (f.minDiscount != null ? 1 : 0);
 }

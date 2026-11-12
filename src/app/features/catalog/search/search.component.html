@@ -1,16 +1,55 @@
 <div class="container py-4">
-  @if (loading) {
+  @if (loading && !products.length) {
     <app-spinner label="Searching..." />
-  } @else if (products.length) {
-    <div class="small text-muted mb-3">{{ products.length }} results for "{{ query }}"</div>
-    <div class="row g-3">
-      @for (product of products; track product.id) {
-        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-          <app-product-card [product]="product" [orgCode]="orgCode" [orgId]="product.org_id" />
-        </div>
-      }
-    </div>
   } @else {
-    <app-empty-state icon="🔍" title="No results" [message]="'Nothing matched \'' + query + '\'.'" />
+    <div class="small text-muted mb-2">{{ products.length }} results for "{{ query }}"</div>
+
+    <app-product-sort-bar
+      [sort]="filters.sort"
+      [resultCount]="null"
+      [activeFilterCount]="activeFilterCount"
+      (sortChange)="onSortChange($event)"
+      (toggleFilters)="toggleFilters()"
+    />
+
+    <div class="search-results__layout">
+      <aside
+        class="search-results__filters"
+        [class.search-results__filters--open]="showFilters"
+        aria-label="Filters"
+        (click)="closeIfBackdrop($event)"
+      >
+        <div class="filter-drawer__sheet">
+          <div class="filter-drawer__header">
+            <span class="filter-drawer__title">Filters</span>
+            <button type="button" class="filter-drawer__close" (click)="toggleFilters()" aria-label="Close filters">✕</button>
+          </div>
+          <div class="filter-drawer__body">
+            <app-product-filter-panel [facets]="facets" [filters]="filters" (filtersChange)="onFiltersChange($event)" />
+          </div>
+          <div class="filter-drawer__footer">
+            <button type="button" class="btn btn-brand w-100" (click)="toggleFilters()">
+              Show {{ products.length }} result{{ products.length === 1 ? '' : 's' }}
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <section aria-label="Results">
+        @if (loading) {
+          <app-spinner label="Searching..." />
+        } @else if (products.length) {
+          <div class="row g-3">
+            @for (product of products; track product.id) {
+              <div class="col-6 col-sm-4 col-md-3 col-lg-3">
+                <app-product-card [product]="product" [orgCode]="orgCode" [orgId]="product.org_id" />
+              </div>
+            }
+          </div>
+        } @else {
+          <app-empty-state icon="🔍" title="No results" [message]="'Nothing matched \'' + query + '\'.'" />
+        }
+      </section>
+    </div>
   }
 </div>

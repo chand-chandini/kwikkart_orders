@@ -4,7 +4,7 @@ import { Observable, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { Address, AddressPayload } from '../models/address.model';
-import { CouponResult, DeliverySlot, OrderCreateRequest, OrderCreateResponse } from '../models/order.model';
+import { DeliverySlot, OrderCreateRequest, OrderCreateResponse } from '../models/order.model';
 
 @Injectable({ providedIn: 'root' })
 export class CheckoutService {
@@ -40,15 +40,6 @@ export class CheckoutService {
     return this.http
       .get<{ data: { slots: DeliverySlot[] } }>(`${environment.apiBaseUrl}/ecommerce/delivery-slots`)
       .pipe(map((res) => res.data.slots));
-  }
-
-  validateCoupon(code: string, orderAmount: number): Observable<CouponResult> {
-    return this.http
-      .post<{ data: CouponResult }>(`${environment.apiBaseUrl}/ecommerce/coupons/validate`, {
-        code,
-        order_amount: orderAmount
-      })
-      .pipe(map((res) => res.data));
   }
 
   placeOrder(request: OrderCreateRequest): Observable<OrderCreateResponse> {

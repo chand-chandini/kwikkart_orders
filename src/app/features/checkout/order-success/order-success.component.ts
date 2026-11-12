@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { OrgContextService } from '../../../core/services/org-context.service';
 import { OrdersService } from '../../../core/services/orders.service';
 import { CartService } from '../../../core/services/cart.service';
+import { CartCouponsService } from '../../../core/services/cart-coupons.service';
 import { ParentOrder } from '../../../core/models/order.model';
 import { paymentDisplayLabel } from '../../../core/config/order-status';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
@@ -21,6 +22,7 @@ export class OrderSuccessComponent implements OnInit {
   private readonly orgContext = inject(OrgContextService);
   private readonly orders = inject(OrdersService);
   private readonly cart = inject(CartService);
+  private readonly cartCoupons = inject(CartCouponsService);
 
   loading = true;
   order: ParentOrder | null = null;
@@ -55,5 +57,6 @@ export class OrderSuccessComponent implements OnInit {
       error: () => (this.loading = false)
     });
     this.cart.reset();
+    this.cartCoupons.reset();
   }
 }

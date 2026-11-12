@@ -6,6 +6,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
+import { CartCouponsService } from '../../../core/services/cart-coupons.service';
 import { OrgSummary } from '../../../core/models/org.model';
 
 @Component({
@@ -34,6 +35,7 @@ export class HeaderComponent {
   constructor(
     public authService: AuthService,
     public cartService: CartService,
+    private cartCoupons: CartCouponsService,
     private router: Router
   ) {
     this.searchChange$
@@ -72,6 +74,7 @@ export class HeaderComponent {
   logout(): void {
     this.authService.logout();
     this.cartService.reset();
+    this.cartCoupons.reset();
     this.router.navigate(['/o', this.orgCode, 'auth', 'mobile']);
   }
 }

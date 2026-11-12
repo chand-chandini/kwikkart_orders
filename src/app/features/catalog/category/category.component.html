@@ -13,6 +13,14 @@
   @if (loading && !category) {
     <app-spinner label="Loading category..." />
   } @else {
+    <app-product-sort-bar
+      [sort]="filters.sort"
+      [resultCount]="loading ? null : products.length"
+      [activeFilterCount]="activeFilterCount"
+      (sortChange)="onSortChange($event)"
+      (toggleFilters)="toggleFilters()"
+    />
+
     <div class="category-browse__layout">
       <nav class="category-browse__sidebar" aria-label="Subcategories">
         <button
@@ -40,6 +48,28 @@
           </button>
         }
       </nav>
+
+      <aside
+        class="category-browse__filters"
+        [class.category-browse__filters--open]="showFilters"
+        aria-label="Filters"
+        (click)="closeIfBackdrop($event)"
+      >
+        <div class="filter-drawer__sheet">
+          <div class="filter-drawer__header">
+            <span class="filter-drawer__title">Filters</span>
+            <button type="button" class="filter-drawer__close" (click)="toggleFilters()" aria-label="Close filters">✕</button>
+          </div>
+          <div class="filter-drawer__body">
+            <app-product-filter-panel [facets]="facets" [filters]="filters" (filtersChange)="onFiltersChange($event)" />
+          </div>
+          <div class="filter-drawer__footer">
+            <button type="button" class="btn btn-brand w-100" (click)="toggleFilters()">
+              Show {{ products.length }} result{{ products.length === 1 ? '' : 's' }}
+            </button>
+          </div>
+        </div>
+      </aside>
 
       <section class="category-browse__products" aria-label="Products">
         @if (loading) {

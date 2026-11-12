@@ -1,0 +1,28 @@
+<div class="product-toolbar">
+  <div class="product-toolbar__left">
+    <button type="button" class="btn btn-outline-secondary btn-sm product-toolbar__filters-btn" (click)="toggleFilters.emit()">
+      <span aria-hidden="true">⚙</span> Filters
+      @if (activeFilterCount > 0) {
+        <span class="badge rounded-pill badge-brand ms-1">{{ activeFilterCount }}</span>
+      }
+    </button>
+
+    @if (resultCount != null) {
+      <span class="text-muted small product-toolbar__count">{{ resultCount }} results</span>
+    }
+  </div>
+
+  <div class="product-toolbar__sort">
+    <label class="text-muted small me-2" for="productSort">Sort by</label>
+    <select
+      id="productSort"
+      class="form-select form-select-sm"
+      [ngModel]="sort"
+      (ngModelChange)="sortChange.emit($event)"
+    >
+      @for (opt of sortOptions; track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+  </div>
+</div>
