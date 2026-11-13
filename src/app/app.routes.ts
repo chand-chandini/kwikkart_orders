@@ -21,6 +21,8 @@ export const routes: Routes = [
       { path: 'auth/otp', loadComponent: () => import('./features/auth/otp-verify/otp-verify.component').then((m) => m.OtpVerifyComponent) },
       { path: 'auth/profile', loadComponent: () => import('./features/auth/complete-profile/complete-profile.component').then((m) => m.CompleteProfileComponent), canActivate: [authGuard] },
 
+      // Try & Buy (cart) and Bookings (orders) are tabs inside the cart/orders pages below, not
+      // their own routes -- /cart?tab=try-buy and /orders?tab=bookings.
       { path: 'cart', loadComponent: () => import('./features/cart/cart.component').then((m) => m.CartComponent), canActivate: [authGuard] },
       { path: 'checkout', loadComponent: () => import('./features/checkout/checkout.component').then((m) => m.CheckoutComponent), canActivate: [authGuard] },
       { path: 'checkout/success/:orderId', loadComponent: () => import('./features/checkout/order-success/order-success.component').then((m) => m.OrderSuccessComponent), canActivate: [authGuard] },

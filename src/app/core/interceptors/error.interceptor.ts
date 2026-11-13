@@ -14,7 +14,15 @@ const SILENT_CODES = new Set([
   'insufficient_stock',
   'address_location_required',
   'not_serviceable',
-  'coupon_invalid'
+  'coupon_invalid',
+  // Try & Buy (try-buy-cart.component) handles all of these inline, same reasoning as the codes
+  // above -- see kkapi tryBuyCtrl.js#createRequest.
+  'ADDRESS_REQUIRED',
+  'ADDRESS_LOCATION_MISSING',
+  'SLOT_REQUIRED',
+  'SLOT_UNAVAILABLE',
+  'TRY_BUY_UNAVAILABLE',
+  'TRY_BUY_ONE_SELLER'
 ]);
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {

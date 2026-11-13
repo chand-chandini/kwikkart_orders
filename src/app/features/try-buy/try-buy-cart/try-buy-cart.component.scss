@@ -1,0 +1,84 @@
+// The delivery-slot picker -- same fixed-overlay + header/body/footer convention as
+// location-picker-modal.component.scss, scoped here since it's specific to this page.
+
+.tbslot-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1065;
+  background: rgba(17, 20, 24, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.tbslot-dialog {
+  background: var(--kk-brand-surface);
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.18);
+}
+
+.tbslot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #edf0f3;
+  flex-shrink: 0;
+}
+
+.tbslot-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.tbslot-close {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.tbslot-body {
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+}
+
+.tbslot-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #edf0f3;
+  flex-shrink: 0;
+}
+
+.tbslot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  background: #fff;
+  font-weight: 600;
+
+  &--selected {
+    border-color: var(--kk-tb-main);
+    background: var(--kk-tb-soft);
+  }
+
+  &--off {
+    background: #f7f7f7;
+    border-color: #eeeeee;
+    color: #a0a0a0;
+    cursor: not-allowed;
+  }
+}

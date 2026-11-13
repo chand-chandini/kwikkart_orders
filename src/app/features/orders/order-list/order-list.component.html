@@ -1,4 +1,13 @@
-@if (loading) {
+<div class="container pt-4 pb-0">
+  <div class="kk-tab-toggle">
+    <button type="button" [class.active]="tab === 'orders'" (click)="setTab('orders')">Orders</button>
+    <button type="button" [class.active]="tab === 'bookings'" (click)="setTab('bookings')">Bookings</button>
+  </div>
+</div>
+
+@if (tab === 'bookings') {
+  <app-try-buy-requests />
+} @else if (loading) {
   <app-spinner label="Loading your orders..." />
 } @else if (list.length === 0) {
   <app-empty-state icon="📦" title="No orders yet" message="Orders you place will show up here.">

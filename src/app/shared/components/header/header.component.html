@@ -57,6 +57,7 @@
         </a>
         @if (authService.isAuthenticated()) {
           <a class="site-header__nav-link" [routerLink]="['/o', orgCode, 'orders']">Orders</a>
+          <a class="site-header__nav-link" [routerLink]="['/o', orgCode, 'orders']" [queryParams]="{ tab: 'bookings' }">My bookings</a>
           <div class="dropdown">
             <a class="site-header__nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
               {{ authService.currentUser()?.name || 'Account' }}
@@ -86,6 +87,22 @@
           <path d="m7 10 5 5 5-5" />
           <path d="M5 21h14" />
         </svg>
+      </a>
+
+      <a
+        class="site-header__icon-btn position-relative d-none d-lg-inline-flex"
+        [routerLink]="['/o', orgCode, 'cart']"
+        [queryParams]="{ tab: 'try-buy' }"
+        title="Try & Buy"
+        aria-label="Try & Buy"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-6 9 6-9 6-9-6Z" />
+          <path d="M3 9v6l9 6 9-6V9" />
+        </svg>
+        @if (tryBuyCart.count() > 0) {
+          <span class="badge rounded-pill site-header__badge" style="background: var(--kk-tb-main);">{{ tryBuyCart.count() }}</span>
+        }
       </a>
 
       <a class="site-header__icon-btn position-relative" [routerLink]="['/o', orgCode, 'cart']" title="Cart" aria-label="Cart">
@@ -146,6 +163,15 @@
     <li><a [href]="playStoreUrl" target="_blank" rel="noopener noreferrer">Get the App</a></li>
     @if (authService.isAuthenticated()) {
       <li><a [routerLink]="['/o', orgCode, 'orders']" (click)="closeSidebar()">Orders</a></li>
+      <li>
+        <a [routerLink]="['/o', orgCode, 'cart']" [queryParams]="{ tab: 'try-buy' }" (click)="closeSidebar()">
+          Try & Buy
+          @if (tryBuyCart.count() > 0) {
+            <span class="badge rounded-pill" style="background: var(--kk-tb-main);">{{ tryBuyCart.count() }}</span>
+          }
+        </a>
+      </li>
+      <li><a [routerLink]="['/o', orgCode, 'orders']" [queryParams]="{ tab: 'bookings' }" (click)="closeSidebar()">My bookings</a></li>
       <li><a [routerLink]="['/o', orgCode, 'account']" (click)="closeSidebar()">My profile</a></li>
       <li><a [routerLink]="['/o', orgCode, 'account', 'addresses']" (click)="closeSidebar()">Addresses</a></li>
       <li><button type="button" (click)="logout(); closeSidebar()">Sign out</button></li>

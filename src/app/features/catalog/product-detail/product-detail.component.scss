@@ -41,6 +41,63 @@
   }
 }
 
+.colour-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 64px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  &__thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    border: 1px solid #d5d5d5;
+    background: #eee;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #eee;
+  }
+
+  &__name {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #667085;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &--selected {
+    .colour-swatch__thumb {
+      border-width: 2px;
+      border-color: var(--kk-brand-text);
+    }
+
+    .colour-swatch__name {
+      color: var(--kk-brand-text);
+      font-weight: 700;
+    }
+  }
+}
+
 .product-details-list {
   display: grid;
   gap: 0.5rem;

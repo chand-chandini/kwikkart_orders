@@ -1,3 +1,5 @@
+import { TryBuyInfo } from './try-buy.model';
+
 export interface Category {
   id: number;
   department_id: number | null;
@@ -85,9 +87,25 @@ export interface Product {
   distance_km?: number;
 }
 
+// Other colours of this design (server: product.colour_options, from style_group_id siblings --
+// see kkapi ecommerceModel.js#colourOptions). Only present (length 2+) when the product has
+// sibling colour rows; each sibling is its OWN product row/id, not a variant of this one -- so
+// switching colour means navigating to that product_id, never a local state change.
+export interface ColourOption {
+  product_id: number;
+  colour: string | null;
+  image_url: string | null;
+  price: number;
+  mrp: number | null;
+  is_current: boolean;
+}
+
 export interface ProductDetail extends Product {
   variants: ProductVariant[];
   images: ProductImage[];
+  colour_options?: ColourOption[];
+  // Try & Buy (ported from kkpublicapp) -- `available` is always the server's answer.
+  try_buy?: TryBuyInfo;
   product_code: string | null;
   expiry_date: string | null;
   department_name: string | null;

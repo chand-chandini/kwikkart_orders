@@ -1,28 +1,34 @@
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { OrgContextService } from '../../core/services/org-context.service';
 import { CartService } from '../../core/services/cart.service';
 import { CartCouponsService } from '../../core/services/cart-coupons.service';
+import { TryBuyCartService } from '../../core/services/try-buy-cart.service';
 import { CartItem, CartVendorGroup } from '../../core/models/cart.model';
 import { SellerCouponQuote } from '../../core/models/coupon.model';
 import { AppError } from '../../core/models/api-error.model';
 import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { QtyStepperComponent } from '../../shared/components/qty-stepper/qty-stepper.component';
+import { TryBuyCartComponent } from '../try-buy/try-buy-cart/try-buy-cart.component';
+
+export type CartTab = 'cart' | 'try-buy';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CurrencyPipe, DecimalPipe, FormsModule, RouterLink, SpinnerComponent, EmptyStateComponent, QtyStepperComponent],
+  imports: [CurrencyPipe, DecimalPipe, FormsModule, RouterLink, SpinnerComponent, EmptyStateComponent, QtyStepperComponent, TryBuyCartComponent],
   templateUrl: './cart.component.html'
 })
 export class CartComponent implements OnInit {
   private readonly orgContext = inject(OrgContextService);
+  private readonly route = inject(ActivatedRoute);
   readonly cartService = inject(CartService);
   readonly coupons = inject(CartCouponsService);
+  readonly tryBuyCart = inject(TryBuyCartService);
   private readonly router = inject(Router);
 
   loading = true;
@@ -30,6 +36,11 @@ export class CartComponent implements OnInit {
   couponInput = '';
   couponVendorSheet: number | null = null; // vendor id whose coupon list is open, if any
   sheetCode = '';
+
+  // Cart and Try & Buy are shown as a switch on one page rather than separate routes --
+  // preselectable via ?tab=try-buy (e.g. the header's Try & Buy link) and read reactively so
+  // clicking that link while already on this page switches tabs without a full reload.
+  tab: CartTab = 'cart';
 
   get orgCode(): string {
     return this.orgContext.getCurrentCode() ?? '';
@@ -39,7 +50,15 @@ export class CartComponent implements OnInit {
     return this.orgContext.requireOrgId();
   }
 
+  setTab(tab: CartTab): void {
+    this.tab = tab;
+    this.router.navigate([], { relativeTo: this.route, queryParams: { tab }, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      this.tab = params.get('tab') === 'try-buy' ? 'try-buy' : 'cart';
+    });
     this.cartService.load(this.orgId).subscribe({
       next: () => {
         this.loading = false;

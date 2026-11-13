@@ -1,4 +1,23 @@
-@if (loading) {
+<div class="container pt-4 pb-0">
+  <div class="kk-tab-toggle">
+    <button type="button" [class.active]="tab === 'cart'" (click)="setTab('cart')">
+      Cart
+      @if (cartService.itemCount() > 0) {
+        <span class="badge rounded-pill bg-brand-secondary ms-1">{{ cartService.itemCount() }}</span>
+      }
+    </button>
+    <button type="button" [class.active]="tab === 'try-buy'" (click)="setTab('try-buy')">
+      Try &amp; Buy
+      @if (tryBuyCart.count() > 0) {
+        <span class="badge rounded-pill ms-1" style="background: var(--kk-tb-main);">{{ tryBuyCart.count() }}</span>
+      }
+    </button>
+  </div>
+</div>
+
+@if (tab === 'try-buy') {
+  <app-try-buy-cart />
+} @else if (loading) {
   <app-spinner label="Loading your cart..." />
 } @else if (cartService.cart().items.length === 0) {
   <app-empty-state icon="🛒" title="Your cart is empty" message="Add products to get started.">

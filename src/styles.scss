@@ -10,6 +10,11 @@
   --kk-brand-text: #1f2328;
   --kk-brand-muted: #6b7280;
   --kk-font-family: "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+  // Try & Buy (ported from kkpublicapp's TryAtHomeCard.jsx TRY_COLORS) -- purple, not the
+  // storefront green, so it reads as a different path from "Add to cart" at a glance.
+  --kk-tb-main: #6d3fc0;
+  --kk-tb-soft: #f3edfc;
+  --kk-tb-border: #d9c9f2;
 }
 
 html, body {
@@ -589,6 +594,146 @@ a {
     border-color: var(--kk-brand-primary);
     color: var(--kk-brand-primary);
     background: rgba(26, 127, 60, 0.06);
+  }
+}
+
+// ---- Segmented tab toggle (Cart/Try & Buy, Orders/Bookings) ----
+
+.kk-tab-toggle {
+  display: inline-flex;
+  gap: 0.25rem;
+  background: #f1f2f4;
+  border-radius: 999px;
+  padding: 0.25rem;
+  margin-bottom: 1rem;
+
+  button {
+    border: none;
+    background: transparent;
+    border-radius: 999px;
+    padding: 0.45rem 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--kk-brand-text);
+    opacity: 0.65;
+
+    &.active {
+      background: #fff;
+      opacity: 1;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    }
+  }
+}
+
+// ---- Try & Buy (product detail card, try-buy cart + bookings pages) ----
+
+.tb-card {
+  background: var(--kk-tb-soft);
+  border: 1px solid var(--kk-tb-border);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+}
+
+.tb-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--kk-tb-main);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tb-text {
+  color: var(--kk-brand-text);
+}
+
+.tb-chip {
+  min-width: 48px;
+  border: 1px solid #d5d5d5;
+  border-radius: 10px;
+  padding: 0.45rem 0.8rem;
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &--selected {
+    background: var(--kk-tb-main);
+    border-color: var(--kk-tb-main);
+    color: #fff;
+  }
+}
+
+.tb-error {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.tb-btn {
+  background: var(--kk-tb-main);
+  border: 1px solid var(--kk-tb-main);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+
+  &:hover:not(:disabled), &:focus:not(:disabled) {
+    background: #5b32a3;
+    border-color: #5b32a3;
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.tb-btn-outline {
+  background: #fff;
+  border: 1.5px solid var(--kk-tb-main);
+  color: var(--kk-tb-main);
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: var(--kk-tb-soft);
+  }
+}
+
+.tb-link {
+  color: var(--kk-tb-main);
+  font-weight: 700;
+}
+
+// "My bookings" status badges -- colours mirror kkpublicapp's TryBuyRequestsScreen.jsx STATUS map.
+.tb-status {
+  font-weight: 700;
+
+  &--requested {
+    background: var(--kk-tb-soft);
+    color: var(--kk-tb-main);
+  }
+
+  &--accepted, &--delivered {
+    background: #ecfdf3;
+    color: #067647;
+  }
+
+  &--rejected {
+    background: #fef3f2;
+    color: #b42318;
+  }
+
+  &--cancelled {
+    background: #f1f1f1;
+    color: #6b6b6b;
+  }
+
+  &--out_for_delivery {
+    background: #eef4ff;
+    color: #2f6fe4;
   }
 }
 

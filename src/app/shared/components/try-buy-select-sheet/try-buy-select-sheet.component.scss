@@ -1,0 +1,221 @@
+// Same fixed-overlay + header/body/footer convention as location-picker-modal.component.scss /
+// try-buy-cart's slot picker -- scoped here since view encapsulation means none of that is
+// actually shared, just the pattern.
+
+.tbsheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1065;
+  background: rgba(17, 20, 24, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  @media (min-width: 768px) {
+    align-items: center;
+    padding: 1rem;
+  }
+}
+
+.tbsheet-dialog {
+  background: var(--kk-brand-surface);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 520px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.18);
+
+  @media (min-width: 768px) {
+    border-radius: 20px;
+  }
+}
+
+.tbsheet-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 0.5rem;
+  flex-shrink: 0;
+}
+
+.tbsheet-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--kk-tb-main);
+}
+
+.tbsheet-subtitle {
+  font-size: 0.78rem;
+  color: #777;
+  margin-top: 2px;
+}
+
+.tbsheet-close {
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tbsheet-body {
+  padding: 0.25rem 1.25rem 0.75rem;
+  overflow-y: auto;
+}
+
+.tbsheet-notice {
+  margin: 0.25rem 1.25rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  background: var(--kk-tb-soft);
+  color: #333;
+  line-height: 1.4;
+}
+
+.tbsheet-footer {
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid #edf0f3;
+  flex-shrink: 0;
+}
+
+.tb-colour-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  width: 64px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  &__thumb {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    border: 1px solid #d5d5d5;
+    background: #eee;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #eee;
+  }
+
+  &__loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__count {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    padding: 0 4px;
+    background: var(--kk-tb-main);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__name {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #666;
+    max-width: 100%;
+  }
+
+  &--selected {
+    .tb-colour-item__thumb {
+      border-width: 2px;
+      border-color: var(--kk-tb-main);
+    }
+
+    .tb-colour-item__name {
+      color: #1a1a1a;
+      font-weight: 800;
+    }
+  }
+}
+
+.tb-gallery-image {
+  width: 96px;
+  height: 120px;
+  border-radius: 10px;
+  background: #eee;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.tb-chip {
+  min-width: 92px;
+  border: 1px solid #d5d5d5;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  text-align: center;
+
+  &__off {
+    color: #1e63d6;
+    font-weight: 700;
+  }
+
+  &--selected {
+    background: var(--kk-tb-main);
+    border-color: var(--kk-tb-main);
+    color: #fff;
+
+    .tb-chip__off {
+      color: #fff;
+    }
+  }
+
+  &:disabled {
+    background: #f3f3f3;
+    border-style: dashed;
+    border-color: #c8c8c8;
+    color: #b0b0b0;
+  }
+}
+
+.tb-sel-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--kk-tb-border, #e5e7eb);
+  background: var(--kk-tb-soft);
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+
+  &--bad {
+    border-color: #f0b4b4;
+    background: #fdecec;
+  }
+}

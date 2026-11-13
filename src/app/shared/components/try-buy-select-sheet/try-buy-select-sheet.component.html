@@ -1,0 +1,118 @@
+<div class="tbsheet-overlay" (click)="close()">
+  <div class="tbsheet-dialog" role="dialog" aria-modal="true" [attr.aria-label]="label" (click)="$event.stopPropagation()">
+    <div class="tbsheet-header">
+      <div class="min-w-0">
+        <div class="tbsheet-title">{{ label }}</div>
+        <div class="tbsheet-subtitle text-truncate">{{ product.name }}</div>
+      </div>
+      <button type="button" class="tbsheet-close" aria-label="Close" (click)="close()">✕</button>
+    </div>
+
+    <div class="tbsheet-body">
+      <div class="small fw-semibold mb-2">
+        Colour
+        @if (colourName(colours[colourIndex(activeId)], colourIndex(activeId)); as name) {
+          : {{ name }}
+        }
+      </div>
+      <div class="d-flex gap-3 overflow-auto pb-1 mb-2">
+        @for (c of colours; track c.productId) {
+          <button
+            type="button"
+            class="tb-colour-item"
+            [class.tb-colour-item--selected]="c.productId === activeId"
+            (click)="setActive(c.productId)"
+          >
+            <span class="tb-colour-item__thumb">
+              @if (c.image) {
+                <img [src]="c.image" alt="" />
+              } @else {
+                <span class="tb-colour-item__placeholder"></span>
+              }
+              @if (!details[c.productId]) {
+                <span class="tb-colour-item__loading"><span class="spinner-border spinner-border-sm"></span></span>
+              }
+              @if (pickedCountFor(c.productId) > 0) {
+                <span class="tb-colour-item__count">{{ pickedCountFor(c.productId) }}</span>
+              }
+            </span>
+            <span class="tb-colour-item__name text-truncate">{{ colourName(c, $index) }}</span>
+          </button>
+        }
+      </div>
+
+      @if (!active) {
+        <div class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></div>
+      } @else if (active === 'error') {
+        <div class="small text-muted">Couldn't load this colour. Try another or reopen.</div>
+      } @else {
+        @if (activeImages.length) {
+          <div class="d-flex gap-2 overflow-auto mb-3">
+            @for (img of activeImages; track img.id) {
+              <img [src]="img.image_url" class="tb-gallery-image" alt="" />
+            }
+          </div>
+        }
+
+        @if (!activeDetail?.try_buy?.available) {
+          <div class="small text-muted mb-2">This colour isn't available for {{ label }}.</div>
+        } @else {
+          <div class="small fw-semibold mb-2">{{ activeSizesHaveNames ? 'Select sizes' : 'Select' }}</div>
+          <div class="d-flex flex-wrap gap-2 mb-2">
+            @for (s of activeSizes; track sizeKey(s)) {
+              <button
+                type="button"
+                class="tb-chip"
+                [class.tb-chip--selected]="isPicked(s.id)"
+                [disabled]="!s.available"
+                (click)="toggle(s)"
+              >
+                <div class="fw-semibold">{{ s.name || activeDetail?.name }}</div>
+                <div class="small">
+                  {{ s.price | currency: 'INR' : 'symbol' : '1.0-2' }}
+                  @if (discountPercent(s.price, s.mrp) > 0) {
+                    <span class="tb-chip__off">{{ discountPercent(s.price, s.mrp) }}% off</span>
+                  }
+                </div>
+                @if (!s.available) {
+                  <div class="small">Out of stock</div>
+                }
+              </button>
+            }
+          </div>
+        }
+      }
+
+      @if (resolved.length) {
+        <div class="small fw-semibold mt-3 mb-2">Your selections ({{ resolved.length }})</div>
+        @for (r of resolved; track r.key) {
+          <div class="tb-sel-row" [class.tb-sel-row--bad]="!r.ok">
+            <div class="min-w-0 flex-grow-1">
+              <div class="small fw-semibold text-truncate">{{ selTitle(r) }}</div>
+              <div class="small text-muted">{{ r.ok ? (r.size!.price | currency: 'INR' : 'symbol' : '1.0-2') : 'No longer available' }}</div>
+            </div>
+            <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none" (click)="remove(r.key)" aria-label="Remove selection">✕</button>
+          </div>
+        }
+      }
+    </div>
+
+    @if (otherSeller) {
+      <div class="tbsheet-notice small">
+        Your {{ label }} list has items from {{ otherSeller }}. {{ label }} takes one seller at a time, so adding these replaces them.
+      </div>
+    }
+    @if (error) {
+      <div class="tb-error small px-3">{{ error }}</div>
+    }
+    <div class="tbsheet-footer">
+      <button type="button" class="btn tb-btn w-100" [disabled]="!resolved.length" (click)="confirm()">
+        @if (!resolved.length) {
+          Select items for {{ label }}
+        } @else {
+          {{ otherSeller ? 'Replace & add' : 'Add' }} {{ resolved.length }} to {{ label }}
+        }
+      </button>
+    </div>
+  </div>
+</div>

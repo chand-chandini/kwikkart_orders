@@ -1,0 +1,379 @@
+@if (!items.length) {
+  <div class="container py-5 text-center">
+    <h4 class="fw-bold mb-2">{{ label }}</h4>
+    <p class="text-muted mb-4">No products added for {{ label }} yet.</p>
+    <div class="d-flex justify-content-center gap-2">
+      <button type="button" class="btn btn-brand" (click)="continueShopping()">Continue Shopping</button>
+      <a class="btn tb-btn-outline" [routerLink]="['/o', orgCode, 'orders']" [queryParams]="{ tab: 'bookings' }">My bookings</a>
+    </div>
+  </div>
+} @else {
+  <div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h4 class="fw-bold mb-0">{{ label }}</h4>
+      <a class="tb-link small" [routerLink]="['/o', orgCode, 'orders']" [queryParams]="{ tab: 'bookings' }">My bookings</a>
+    </div>
+
+    <div class="tb-card mb-3 py-2 px-3 small text-muted">
+      This list is separate from your shopping cart. Cart coupons and offers don't apply here.
+    </div>
+
+    @if (quoteError) {
+      <button type="button" class="alert alert-danger small w-100 text-start border-0" (click)="refreshQuote()">
+        {{ quoteError }}. Tap to retry.
+      </button>
+    }
+    @if (unavailable) {
+      <div class="alert alert-danger small">
+        {{ unavailable }} {{ unavailable === 1 ? 'item is' : 'items are' }} no longer available for {{ label }}. Remove
+        {{ unavailable === 1 ? 'it' : 'them' }} to continue.
+      </div>
+    }
+
+    @if (groups.length > 1) {
+      <div class="alert alert-warning small">
+        <div class="fw-semibold mb-2">{{ label }} works with one seller at a time. Choose which seller's products to keep.</div>
+        <div class="d-flex flex-wrap gap-2">
+          @for (g of groups; track g.vendorId) {
+            <button type="button" class="btn btn-sm btn-outline-warning" (click)="keepSeller(g.vendorId)">
+              Keep {{ sellerById[g.vendorId]?.vendor_name || g.vendorName }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+        @for (g of groups; track g.vendorId) {
+          <div class="mb-4">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="fw-semibold">Sold by {{ sellerById[g.vendorId]?.vendor_name || g.vendorName }}</span>
+              @if (sellerDeliveryCharge(g.vendorId) != null) {
+                <span class="small tb-link ms-auto">Delivery {{ sellerDeliveryCharge(g.vendorId)! > 0 ? (sellerDeliveryCharge(g.vendorId) | currency: 'INR' : 'symbol' : '1.0-2') : 'Free' }}</span>
+              }
+            </div>
+
+            @for (it of g.items; track it.lineId) {
+              <div class="card mb-2" [class.border-danger]="isUnavailable(it.lineId)">
+                <div class="card-body">
+                  <div class="d-flex gap-3">
+                    <img [src]="liveLine(it.lineId)?.image_url || it.image" class="cart-item-image" alt="" [class.opacity-50]="isUnavailable(it.lineId)" />
+                    <div class="flex-grow-1 min-w-0">
+                      <span class="tb-badge mb-1">{{ label }}</span>
+                      <div class="fw-semibold">{{ liveLine(it.lineId)?.name || it.name }}</div>
+                      @if (it.brand) {
+                        <div class="small text-muted">{{ it.brand }}</div>
+                      }
+                      <div class="small text-muted">
+                        @if (it.variantName) {
+                          Size <strong>{{ liveLine(it.lineId)?.variant_name || it.variantName }}</strong>
+                        }
+                        @if (it.color) {
+                          &nbsp;&nbsp;Colour <strong>{{ it.color }}</strong>
+                        }
+                      </div>
+                      <div class="d-flex align-items-baseline gap-2 mt-1">
+                        <span class="fw-bold">{{ (liveLine(it.lineId)?.price ?? it.price) | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+                        @if ((liveLine(it.lineId)?.mrp ?? it.mrp) && (liveLine(it.lineId)?.mrp ?? it.mrp)! > (liveLine(it.lineId)?.price ?? it.price)) {
+                          <span class="text-muted text-decoration-line-through small">{{ (liveLine(it.lineId)?.mrp ?? it.mrp) | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+                        }
+                      </div>
+                      @if (isUnavailable(it.lineId)) {
+                        <div class="tb-error small mt-1">{{ liveLine(it.lineId)?.reason }}</div>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-center gap-3 mt-2">
+                    <app-qty-stepper [compact]="true" [qty]="it.quantity" [min]="1" [max]="TRY_BUY_MAX_QTY" (qtyChange)="setQty(it, $event)" />
+                    @if (it.sizeOptions.length > 1 || it.colors.length > 1) {
+                      <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="toggleEdit(it)">
+                        {{ editingLineId === it.lineId ? 'Done' : 'Change' }}
+                      </button>
+                    }
+                    <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none ms-auto" (click)="removeItem(it)">Remove</button>
+                  </div>
+
+                  @if (editingLineId === it.lineId) {
+                    <div class="border-top pt-2 mt-2">
+                      @if (it.sizeOptions.length > 1) {
+                        <div class="small fw-semibold mb-2">Size</div>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                          @for (opt of it.sizeOptions; track opt.id) {
+                            <button type="button" class="tb-chip" [class.tb-chip--selected]="it.variantId === opt.id" (click)="changeVariant(it, { variantId: opt.id })">
+                              {{ opt.name }}
+                            </button>
+                          }
+                        </div>
+                      }
+                      @if (it.colors.length > 1) {
+                        <div class="small fw-semibold mb-2">Colour</div>
+                        <div class="d-flex flex-wrap gap-2">
+                          @for (c of it.colors; track c) {
+                            <button type="button" class="tb-chip" [class.tb-chip--selected]="it.color === c" (click)="changeVariant(it, { color: c })">
+                              {{ c }}
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="card mb-3">
+          <div class="card-header bg-white fw-semibold">Booking details</div>
+          <div class="card-body">
+            <div class="small text-muted mb-2">Delivery address</div>
+            @if (addresses === null) {
+              <span class="spinner-border spinner-border-sm"></span>
+            } @else {
+              @for (address of addresses; track address.id) {
+                <label class="d-flex align-items-start gap-2 p-2 border rounded mb-2 address-option" [class.address-option--active]="addressId === address.id">
+                  <input type="radio" name="tb_address" [checked]="addressId === address.id" (change)="selectAddress(address.id)" />
+                  <span>
+                    <strong>{{ address.label || 'Address' }}</strong> — {{ address.contact_name }}, {{ address.contact_phone }}<br />
+                    <span class="text-muted small">
+                      {{ address.house_no }} {{ address.address_line }}, {{ address.city }}, {{ address.state }} - {{ address.pincode }}
+                    </span>
+                  </span>
+                </label>
+              }
+
+              @if (!showAddressForm) {
+                <button class="btn btn-outline-brand btn-sm" type="button" (click)="showAddressForm = true; addressFormError = null">+ Add new address</button>
+              } @else {
+                <form class="mt-2" (ngSubmit)="saveAddress()">
+                  <div class="row g-3">
+                    <div class="col-sm-6">
+                      <label class="form-label small text-muted" for="tb_contact_name">Full name</label>
+                      <input id="tb_contact_name" class="form-control" placeholder="Full name" [(ngModel)]="newAddress.contact_name" name="contact_name" required />
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label small text-muted" for="tb_contact_phone">Phone number</label>
+                      <input
+                        id="tb_contact_phone"
+                        class="form-control"
+                        type="tel"
+                        inputmode="numeric"
+                        maxlength="10"
+                        placeholder="10-digit mobile number"
+                        [(ngModel)]="newAddress.contact_phone"
+                        name="contact_phone"
+                        required
+                      />
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label small text-muted" for="tb_house_no">House no / Flat</label>
+                      <input id="tb_house_no" class="form-control" placeholder="House no / Flat" [(ngModel)]="newAddress.house_no" name="house_no" />
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label small text-muted" for="tb_address_line">Address line</label>
+                      <input id="tb_address_line" class="form-control" placeholder="Street, area" [(ngModel)]="newAddress.address_line" name="address_line" required />
+                    </div>
+                    <div class="col-sm-4">
+                      <label class="form-label small text-muted" for="tb_city">City</label>
+                      <input id="tb_city" class="form-control" placeholder="City" [(ngModel)]="newAddress.city" name="city" required />
+                    </div>
+                    <div class="col-sm-4">
+                      <label class="form-label small text-muted" for="tb_state">State</label>
+                      <input id="tb_state" class="form-control" placeholder="State" [(ngModel)]="newAddress.state" name="state" required />
+                    </div>
+                    <div class="col-sm-4">
+                      <label class="form-label small text-muted" for="tb_pincode">Pincode</label>
+                      <input
+                        id="tb_pincode"
+                        class="form-control"
+                        type="text"
+                        inputmode="numeric"
+                        maxlength="6"
+                        placeholder="6-digit pincode"
+                        [(ngModel)]="newAddress.pincode"
+                        name="pincode"
+                        required
+                      />
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label small text-muted" for="tb_landmark">Landmark (optional)</label>
+                      <input id="tb_landmark" class="form-control" placeholder="Landmark (optional)" [(ngModel)]="newAddress.landmark" name="landmark" />
+                    </div>
+
+                    <div class="col-12">
+                      <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="locating" (click)="useMyLocation()">
+                          @if (locating) {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                          }
+                          📍 Use my current location
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" (click)="showLocationPicker = true">🗺️ Choose on map</button>
+                        @if (newAddress.latitude) {
+                          <span class="small text-success">Location captured ✓</span>
+                        }
+                      </div>
+                      <div class="small text-muted mt-1">{{ label }} requires a map pin on the delivery address to confirm delivery charges.</div>
+                    </div>
+
+                    @if (addressFormError) {
+                      <div class="col-12"><div class="alert alert-warning small mb-0">{{ addressFormError }}</div></div>
+                    }
+
+                    <div class="col-12 d-flex gap-2 mt-2">
+                      <button class="btn tb-btn" type="submit">Save address</button>
+                      <button class="btn btn-link" type="button" (click)="showAddressForm = false; addressFormError = null">Cancel</button>
+                    </div>
+                  </div>
+                </form>
+              }
+            }
+
+            @if (sellerId) {
+              <div class="small text-muted mt-3 mb-2">Delivery slot</div>
+              <button type="button" class="d-flex align-items-center gap-2 p-2 border rounded w-100 text-start bg-white" (click)="openSlots()">
+                @if (slotPick) {
+                  <span>
+                    <strong>{{ dayLabelFor(slotPick.date) }}</strong>, {{ slotPick.label }}
+                  </span>
+                } @else {
+                  <span class="text-muted small">
+                    @if (slotsError) {
+                      Could not load slots. Tap to retry.
+                    } @else if (slotData === null) {
+                      Loading slots…
+                    } @else if (!slotData.days.length) {
+                      No delivery slots open right now
+                    } @else {
+                      Choose a delivery slot
+                    }
+                  </span>
+                }
+                <span class="tb-link small ms-auto">{{ slotPick ? 'Change' : 'Choose' }}</span>
+              </button>
+            }
+
+            <label class="small text-muted mt-3 mb-2 d-block" for="tb_note">Note for the seller (optional)</label>
+            <textarea id="tb_note" class="form-control" rows="2" maxlength="300" [(ngModel)]="note" name="note" placeholder="e.g. Please call before arriving"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="fw-semibold mb-0">Booking summary</h6>
+              @if (quoting) {
+                <span class="spinner-border spinner-border-sm"></span>
+              }
+            </div>
+            @if (quote) {
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Items value</span>
+                <span>{{ quote.items_value | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+              </div>
+              @for (s of quote.sellers; track s.vendor_id) {
+                @if (s.items_count > 0) {
+                  <div class="d-flex justify-content-between mb-2 small">
+                    <span class="text-muted">{{ label }} delivery · {{ s.vendor_name }}</span>
+                    <span>{{ s.delivery_charge > 0 ? (s.delivery_charge | currency: 'INR' : 'symbol' : '1.0-2') : 'Free' }}</span>
+                  </div>
+                }
+              }
+              <hr />
+              <div class="d-flex justify-content-between fw-bold mb-2">
+                <span>{{ label }} delivery total</span>
+                <span>{{ quote.delivery_total > 0 ? (quote.delivery_total | currency: 'INR' : 'symbol' : '1.0-2') : 'Free' }}</span>
+              </div>
+              <div class="small text-muted">No payment is taken when you place this booking. Items value is shown for reference.</div>
+            } @else if (!quoteError) {
+              <div class="small text-muted">Loading prices…</div>
+            }
+
+            @if (blocker) {
+              <div class="small text-warning fw-semibold mt-3">{{ blocker }}</div>
+            }
+            <div class="d-flex gap-2 mt-3">
+              <button type="button" class="btn btn-outline-secondary flex-grow-1" (click)="continueShopping()">Continue Shopping</button>
+              <button type="button" class="btn tb-btn flex-grow-1" [disabled]="!canRequest" (click)="submit()">
+                @if (submitting) {
+                  <span class="spinner-border spinner-border-sm me-1"></span>
+                }
+                Book {{ label }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (slotsOpen) {
+    <div class="tbslot-overlay" (click)="slotsOpen = false">
+      <div class="tbslot-dialog" role="dialog" aria-modal="true" aria-label="Choose a delivery slot" (click)="$event.stopPropagation()">
+        <div class="tbslot-header">
+          <h5 class="tbslot-title">Choose a delivery slot</h5>
+          <div class="d-flex align-items-center gap-3">
+            <button type="button" class="tb-link small border-0 bg-transparent" (click)="loadSlots()">Refresh</button>
+            <button type="button" class="tbslot-close" aria-label="Close" (click)="slotsOpen = false">✕</button>
+          </div>
+        </div>
+        <div class="tbslot-body">
+          @if (slotsError) {
+            <button type="button" class="alert alert-danger small w-100 text-start border-0" (click)="loadSlots()">{{ slotsError }}. Tap to retry.</button>
+          } @else if (slotData === null) {
+            <div class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></div>
+          } @else if (!slotData.days.length) {
+            <div class="text-muted small py-3">This seller has no delivery slots open right now.</div>
+          } @else {
+            <div class="d-flex gap-2 flex-wrap mb-3">
+              @for (d of slotData.days; track d.date) {
+                <button
+                  type="button"
+                  class="tb-chip"
+                  [class.tb-chip--selected]="slotDate === d.date"
+                  [class.opacity-50]="!dayIsOpen(d.slots)"
+                  (click)="slotDate = d.date"
+                >
+                  {{ dayLabelFor(d.date) }}
+                </button>
+              }
+            </div>
+            <div class="d-flex flex-column gap-2">
+              @for (s of slotsForDate(slotDate); track s.slot_id) {
+                <button
+                  type="button"
+                  class="tbslot-row"
+                  [class.tbslot-row--selected]="slotPick?.slot_id === s.slot_id && slotPick?.date === slotDate"
+                  [class.tbslot-row--off]="s.state !== 'available'"
+                  [disabled]="s.state !== 'available'"
+                  (click)="pickSlot(s)"
+                >
+                  <span>{{ s.label }}</span>
+                  <span class="small">{{ s.state === 'available' ? (s.remaining + ' left') : s.state }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <div class="tbslot-footer">
+          <button type="button" class="btn tb-btn w-100" [disabled]="!slotPick" (click)="slotsOpen = false">
+            {{ slotPick ? 'Confirm slot' : 'Pick a slot' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showLocationPicker) {
+    <app-location-picker-modal
+      [initialLat]="newAddress.latitude"
+      [initialLng]="newAddress.longitude"
+      (closed)="showLocationPicker = false"
+      (picked)="onLocationPicked($event)"
+    />
+  }
+}
