@@ -7,6 +7,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 import { CartCouponsService } from '../../../core/services/cart-coupons.service';
+import { VendorDeliverySlotsService } from '../../../core/services/vendor-delivery-slots.service';
 import { TryBuyCartService } from '../../../core/services/try-buy-cart.service';
 import { OrgSummary } from '../../../core/models/org.model';
 
@@ -38,6 +39,7 @@ export class HeaderComponent {
     public cartService: CartService,
     public tryBuyCart: TryBuyCartService,
     private cartCoupons: CartCouponsService,
+    private vendorSlots: VendorDeliverySlotsService,
     private router: Router
   ) {
     this.searchChange$
@@ -77,6 +79,7 @@ export class HeaderComponent {
     this.authService.logout();
     this.cartService.reset();
     this.cartCoupons.reset();
+    this.vendorSlots.reset();
     this.tryBuyCart.reset();
     this.router.navigate(['/o', this.orgCode, 'auth', 'mobile']);
   }

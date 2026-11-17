@@ -5,6 +5,8 @@ export type ApiErrorCode =
   | 'address_location_required'
   | 'not_serviceable'
   | 'coupon_invalid'
+  | 'delivery_slot_required'
+  | 'delivery_slot_unavailable'
   | 'role_mismatch';
 
 export interface AppError {

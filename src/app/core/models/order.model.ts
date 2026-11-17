@@ -10,6 +10,7 @@ export interface OrderCreateRequest {
   org_id?: number;
   coupon_code?: string;
   seller_coupons?: SellerCouponRequest[];
+  seller_slots?: SellerSlotRequest[];
   instructions?: string;
   use_wallet?: boolean;
 }
@@ -19,6 +20,7 @@ export interface VendorOrderSummary {
   order_number: string;
   grand_total: number;
   vendor_id: number;
+  delivery_slot: BookedVendorSlot | null;
 }
 
 export interface OrderCreateResponse {
@@ -152,6 +154,55 @@ export interface DeliverySlot {
   label: string;
   start_time: string;
   end_time: string;
+}
+
+// Seller delivery slots for NORMAL orders (kkapi public_app 2026-11-24) -- separate from the
+// platform-wide DeliverySlot above (Try & Buy's own slot list stays separate too). One section
+// per seller in the cart: GET /ecommerce/checkout/delivery-slots?org_id=.
+export interface VendorSlotOption {
+  slot_id: number;
+  label: string;
+  start_time: string;
+  end_time: string;
+  remaining: number;
+}
+
+export interface VendorSlotDay {
+  date: string;
+  weekday: string;
+  slots: VendorSlotOption[];
+}
+
+export interface VendorSlotDefault {
+  slot_id: number;
+  date: string;
+  label: string;
+}
+
+export interface VendorSlotSection {
+  vendor_id: number;
+  has_slots: boolean;
+  today: string;
+  days: VendorSlotDay[];
+  default: VendorSlotDefault | null;
+}
+
+export interface SellerSlotRequest {
+  vendor_id: number;
+  slot_id: number;
+  date: string;
+}
+
+export interface SellerSlotProblem {
+  vendor_id: number;
+  code: string;
+  message: string;
+}
+
+export interface BookedVendorSlot {
+  slot_id: number;
+  slot_date: string;
+  slot_label: string | null;
 }
 
 export interface WalletTransaction {

@@ -174,6 +174,55 @@
           </div>
         }
 
+        @if (vendorSlots.sellersWithSlots().length) {
+          <div class="card mb-3">
+            <div class="card-header bg-white fw-semibold">Delivery slots</div>
+            <div class="card-body">
+              @for (section of vendorSlots.sellersWithSlots(); track section.vendor_id; let last = $last) {
+                <div [class.mb-3]="!last" [class.pb-3]="!last" [class.border-bottom]="!last">
+                  <div class="fw-semibold small mb-2">{{ vendorName(section.vendor_id) }}</div>
+                  <div class="d-flex flex-wrap gap-2 mb-2">
+                    @for (day of section.days; track day.date) {
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        [class.btn-brand]="activeDayFor(section) === day.date"
+                        [class.btn-outline-secondary]="activeDayFor(section) !== day.date"
+                        (click)="setActiveDay(section.vendor_id, day.date)"
+                      >
+                        {{ day.date === section.today ? 'Today' : day.weekday + ', ' + (day.date | date: 'd MMM') }}
+                      </button>
+                    }
+                  </div>
+                  <div class="d-flex flex-wrap gap-2">
+                    @for (day of section.days; track day.date) {
+                      @if (day.date === activeDayFor(section)) {
+                        @for (slot of day.slots; track slot.slot_id) {
+                          <button
+                            type="button"
+                            class="btn btn-sm"
+                            [class.btn-brand]="vendorSlots.pickFor(section.vendor_id)?.slot_id === slot.slot_id && vendorSlots.pickFor(section.vendor_id)?.date === day.date"
+                            [class.btn-outline-secondary]="!(vendorSlots.pickFor(section.vendor_id)?.slot_id === slot.slot_id && vendorSlots.pickFor(section.vendor_id)?.date === day.date)"
+                            (click)="pickVendorSlot(section.vendor_id, slot.slot_id, day.date)"
+                          >
+                            {{ slot.label }}
+                            @if (slot.remaining <= 3) {
+                              <span class="small"> · {{ slot.remaining }} left</span>
+                            }
+                          </button>
+                        }
+                      }
+                    }
+                  </div>
+                  @if (vendorSlots.problemFor(section.vendor_id)) {
+                    <div class="small text-danger mt-1">{{ vendorSlots.problemFor(section.vendor_id) }}</div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <div class="card mb-3">
           <div class="card-header bg-white fw-semibold">Payment method</div>
           <div class="card-body">
@@ -247,7 +296,7 @@
             }
             <button
               class="btn btn-brand w-100"
-              [disabled]="placing || !selectedAddressId || unserviceableItems.length > 0"
+              [disabled]="placing || !selectedAddressId || unserviceableItems.length > 0 || !vendorSlots.allPicked()"
               (click)="placeOrder()"
             >
               @if (placing) {

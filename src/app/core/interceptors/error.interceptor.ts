@@ -15,6 +15,8 @@ const SILENT_CODES = new Set([
   'address_location_required',
   'not_serviceable',
   'coupon_invalid',
+  'delivery_slot_required',
+  'delivery_slot_unavailable',
   // Try & Buy (try-buy-cart.component) handles all of these inline, same reasoning as the codes
   // above -- see kkapi tryBuyCtrl.js#createRequest.
   'ADDRESS_REQUIRED',

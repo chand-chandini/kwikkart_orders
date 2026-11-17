@@ -1,4 +1,4 @@
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -6,13 +6,14 @@ import { Router, RouterLink } from '@angular/router';
 import { OrgContextService } from '../../core/services/org-context.service';
 import { CartService } from '../../core/services/cart.service';
 import { CartCouponsService } from '../../core/services/cart-coupons.service';
+import { VendorDeliverySlotsService } from '../../core/services/vendor-delivery-slots.service';
 import { CheckoutService } from '../../core/services/checkout.service';
 import { PaymentsService } from '../../core/services/payments.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Address, AddressPayload, PickedLocation } from '../../core/models/address.model';
 import { CartItem } from '../../core/models/cart.model';
-import { DeliverySlot, PaymentMethod } from '../../core/models/order.model';
+import { DeliverySlot, PaymentMethod, SellerSlotProblem, VendorSlotSection } from '../../core/models/order.model';
 import { AppError } from '../../core/models/api-error.model';
 import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
 import { LocationPickerModalComponent } from '../../shared/components/location-picker-modal/location-picker-modal.component';
@@ -46,13 +47,14 @@ const EMPTY_ADDRESS: AddressPayload = {
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [FormsModule, CurrencyPipe, RouterLink, SpinnerComponent, LocationPickerModalComponent],
+  imports: [FormsModule, CurrencyPipe, DatePipe, RouterLink, SpinnerComponent, LocationPickerModalComponent],
   templateUrl: './checkout.component.html'
 })
 export class CheckoutComponent implements OnInit {
   private readonly orgContext = inject(OrgContextService);
   readonly cartService = inject(CartService);
   readonly coupons = inject(CartCouponsService);
+  readonly vendorSlots = inject(VendorDeliverySlotsService);
   private readonly checkout = inject(CheckoutService);
   private readonly payments = inject(PaymentsService);
   private readonly auth = inject(AuthService);
@@ -82,6 +84,10 @@ export class CheckoutComponent implements OnInit {
   blockedItemIds = new Set<number>();
   removingBlockedId: number | null = null;
 
+  // Which day's slots are showing per seller -- ephemeral UI state, not part of the pick itself
+  // (vendorSlots.picks holds that). Defaults to the picked day, else the section's first day.
+  private activeDayByVendor: Record<number, string> = {};
+
   get orgCode(): string {
     return this.orgContext.getCurrentCode() ?? '';
   }
@@ -105,6 +111,25 @@ export class CheckoutComponent implements OnInit {
     return !!this.orgContext.accessFlags()?.online_payment_enabled;
   }
 
+  vendorName(vendorId: number): string {
+    return this.cartService.cart().vendors.find((v) => v.vendor_id === vendorId)?.vendor_name ?? 'Seller';
+  }
+
+  activeDayFor(section: VendorSlotSection): string {
+    const active = this.activeDayByVendor[section.vendor_id];
+    if (active && section.days.some((d) => d.date === active)) return active;
+    return this.vendorSlots.pickFor(section.vendor_id)?.date ?? section.days[0]?.date ?? '';
+  }
+
+  setActiveDay(vendorId: number, date: string): void {
+    this.activeDayByVendor[vendorId] = date;
+  }
+
+  pickVendorSlot(vendorId: number, slotId: number, date: string): void {
+    this.vendorSlots.pick(vendorId, slotId, date);
+    this.activeDayByVendor[vendorId] = date;
+  }
+
   ngOnInit(): void {
     const orgId = this.orgContext.requireOrgId();
     this.checkout.listAddresses().subscribe((addresses) => {
@@ -117,6 +142,7 @@ export class CheckoutComponent implements OnInit {
       }
     });
     this.checkout.listDeliverySlots().subscribe((slots) => (this.slots = slots));
+    this.vendorSlots.attach(orgId);
     this.cartService.load(orgId).subscribe({
       next: () => {
         this.loading = false;
@@ -211,6 +237,7 @@ export class CheckoutComponent implements OnInit {
         org_id: this.orgContext.requireOrgId(),
         coupon_code: this.coupons.platformApplied() ? this.coupons.platformCode() ?? undefined : undefined,
         seller_coupons: this.coupons.appliedSellerCoupons(),
+        seller_slots: this.vendorSlots.sellerSlotsForOrder(),
         instructions: this.instructions.trim() || undefined
       })
       .subscribe({
@@ -260,6 +287,17 @@ export class CheckoutComponent implements OnInit {
         this.checkoutError = err.message;
         this.coupons.attach(this.orgContext.requireOrgId());
         break;
+      case 'delivery_slot_required':
+      case 'delivery_slot_unavailable': {
+        // A seller's slot wasn't picked, or filled up / closed between loading the sections and
+        // placing the order -- refetch so the section shows what's bookable now (attach() keeps
+        // any pick that's still valid and defaults the rest), and flag which seller(s) it was.
+        this.checkoutError = err.message;
+        const problems = (err.raw as { slots?: SellerSlotProblem[] })?.slots ?? [];
+        this.vendorSlots.setProblems(problems);
+        this.vendorSlots.attach(this.orgContext.requireOrgId());
+        break;
+      }
       default:
         break;
     }
