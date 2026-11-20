@@ -18,7 +18,12 @@
           <div class="d-flex align-items-start gap-2 mb-2">
             <div class="flex-grow-1 min-w-0">
               <div class="fw-semibold">{{ req.vendor_name }}</div>
-              <div class="small text-muted">Booking #{{ req.id }} · {{ req.created_at | date: 'd MMM, h:mm a' }}</div>
+              <div class="small text-muted">
+                @if (req.order_number) {
+                  Order #{{ req.order_number }} ·
+                }
+                {{ req.created_at | date: 'd MMM, h:mm a' }}
+              </div>
             </div>
             <span class="badge" [class]="'tb-status tb-status--' + statusKey(req)">{{ statusLabel(req) }}</span>
           </div>

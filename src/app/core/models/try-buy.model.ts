@@ -221,6 +221,7 @@ export interface TryBuyRequest {
   vendor_name: string;
   status: TryBuyRequestStatus;
   order_id: number | null;
+  order_number: string | null;
   order_status: number | null;
   items: TryBuyRequestLine[];
   items_value: number;

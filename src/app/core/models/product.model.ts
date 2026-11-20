@@ -85,6 +85,10 @@ export interface Product {
   is_serviceable?: boolean;
   serviceability?: string;
   distance_km?: number;
+  // Light Try & Buy tag on list cards (kkapi tryBuyCtrl.annotateListTryBuy) -- just enough to
+  // show the ribbon/button; the full TryBuyInfo (delivery_charge, variant_ids, colors) only
+  // comes with the product detail fetch.
+  try_buy?: { available: boolean; label: string };
 }
 
 // Other colours of this design (server: product.colour_options, from style_group_id siblings --

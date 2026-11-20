@@ -16,9 +16,16 @@ export class VendorDeliverySlotsService {
   private readonly _sections = signal<VendorSlotSection[]>([]);
   private readonly _picks = signal<Record<number, SellerSlotRequest>>({}); // vendor_id -> pick
   private readonly _problems = signal<Record<number, string>>({}); // vendor_id -> message
+  // null = never loaded (or mid-request); false/true once attach()'s request settles, so the
+  // template can tell "still loading" apart from "loaded, nobody has slots" instead of treating
+  // both as nothing-to-show (see loadError below for the third case: the request itself failed).
+  private readonly _loaded = signal(false);
+  private readonly _loadError = signal<string | null>(null);
 
   readonly sections = this._sections.asReadonly();
   readonly picks = this._picks.asReadonly();
+  readonly loaded = this._loaded.asReadonly();
+  readonly loadError = this._loadError.asReadonly();
 
   readonly sellersWithSlots = computed(() => this.sections().filter((s) => s.has_slots));
 
@@ -35,27 +42,37 @@ export class VendorDeliverySlotsService {
   // if it's still valid (so re-fetching after a "slot unavailable" error doesn't throw away a
   // choice that's still good).
   attach(orgId: number): void {
+    this._loadError.set(null);
     this.http
       .get<{ data: { sellers: VendorSlotSection[] } }>(`${environment.apiBaseUrl}/ecommerce/checkout/delivery-slots`, {
         params: { org_id: orgId }
       })
       .pipe(map((res) => res.data.sellers))
-      .subscribe((sections) => {
-        this._sections.set(sections);
-        this._picks.update((cur) => {
-          const next: Record<number, SellerSlotRequest> = {};
-          sections.forEach((s) => {
-            if (!s.has_slots) return;
-            const existing = cur[s.vendor_id];
-            const stillValid = !!existing && s.days.some((d) => d.date === existing.date && d.slots.some((sl) => sl.slot_id === existing.slot_id));
-            if (stillValid) {
-              next[s.vendor_id] = existing;
-            } else if (s.default) {
-              next[s.vendor_id] = { vendor_id: s.vendor_id, slot_id: s.default.slot_id, date: s.default.date };
-            }
+      .subscribe({
+        next: (sections) => {
+          this._sections.set(sections);
+          this._loaded.set(true);
+          this._picks.update((cur) => {
+            const next: Record<number, SellerSlotRequest> = {};
+            sections.forEach((s) => {
+              if (!s.has_slots) return;
+              const existing = cur[s.vendor_id];
+              const stillValid = !!existing && s.days.some((d) => d.date === existing.date && d.slots.some((sl) => sl.slot_id === existing.slot_id));
+              if (stillValid) {
+                next[s.vendor_id] = existing;
+              } else if (s.default) {
+                next[s.vendor_id] = { vendor_id: s.vendor_id, slot_id: s.default.slot_id, date: s.default.date };
+              }
+            });
+            return next;
           });
-          return next;
-        });
+        },
+        // Previously unhandled -- a failed request (network blip, a 401 racing a token refresh,
+        // an unexpected 5xx) left `sections` at its initial [] forever, with nothing re-firing
+        // attach() afterwards: the "Delivery slots" card just never appeared, indistinguishable
+        // from "this org has no seller slots." Mirrors CheckoutScreen.jsx's own slotsError state
+        // (a tappable "couldn't load, retry" row) instead of failing silently.
+        error: () => this._loadError.set("Couldn't load delivery slots.")
       });
   }
 
@@ -92,5 +109,7 @@ export class VendorDeliverySlotsService {
     this._sections.set([]);
     this._picks.set({});
     this._problems.set({});
+    this._loaded.set(false);
+    this._loadError.set(null);
   }
 }

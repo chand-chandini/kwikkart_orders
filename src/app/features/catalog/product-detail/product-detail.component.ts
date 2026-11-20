@@ -159,6 +159,12 @@ export class ProductDetailComponent implements OnInit {
         this.colourOptions = product.colour_options ?? [];
         this.tryBuySheetOpen = false;
         this.loading = false;
+        // The listing card's "Try & Buy" button links here with ?tryBuy=1 to jump straight into
+        // the sheet, same shortcut kkpublicapp's card gives -- same auth/availability guard as
+        // clicking the button on this page would go through.
+        if (this.route.snapshot.queryParamMap.get('tryBuy') === '1') {
+          this.openTryBuySheet();
+        }
         this.catalog.similarProducts(product.id).subscribe((products) => (this.similar = products));
       },
       error: () => (this.loading = false)

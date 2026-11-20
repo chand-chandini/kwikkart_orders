@@ -56,6 +56,23 @@ export class ProductCardComponent {
     return Math.round(((this.product.mrp - this.product.price) / this.product.mrp) * 100);
   }
 
+  get tryBuyAvailable(): boolean {
+    return !!this.product.try_buy?.available;
+  }
+
+  get tryBuyLabel(): string {
+    return this.product.try_buy?.label || 'Try & Buy';
+  }
+
+  // Opens the product page straight into the Try & Buy sheet (tryBuy=1), same shortcut
+  // kkpublicapp's "Try at Home" card button gives -- stops the card's own routerLink from also
+  // firing a plain navigation underneath.
+  goToTryBuy(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.router.navigate(['/o', this.orgCode, 'p', this.product.id], { queryParams: { tryBuy: '1' } });
+  }
+
   quickAdd(event: Event): void {
     event.preventDefault();
     event.stopPropagation();

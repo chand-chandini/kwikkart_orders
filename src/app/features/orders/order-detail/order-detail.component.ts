@@ -1,4 +1,4 @@
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
@@ -7,13 +7,14 @@ import { OrgContextService } from '../../../core/services/org-context.service';
 import { OrdersService } from '../../../core/services/orders.service';
 import { OrderDetail, ParentOrder, ParentOrderVendorEntry } from '../../../core/models/order.model';
 import { Address } from '../../../core/models/address.model';
+import { dayLabel } from '../../../core/models/try-buy.model';
 import { ORDER_STATUS_PILL, ORDER_STATUS_LABELS, paymentDisplayLabel } from '../../../core/config/order-status';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CurrencyPipe, SpinnerComponent],
+  imports: [CurrencyPipe, DatePipe, SpinnerComponent],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.scss'
 })
@@ -58,11 +59,29 @@ export class OrderDetailComponent implements OnInit {
           grand_total: o.grand_total,
           items: o.items,
           payment_method: o.payment_method,
-          payment_summary: o.payment_summary
+          payment_summary: o.payment_summary,
+          placed_at: o.placed_at,
+          delivery_slot: o.delivery_slot
         }
       ];
     }
     return [];
+  }
+
+  // All vendor orders under one checkout are inserted together, so the first one's placed_at IS
+  // the checkout's placed time -- null only while still loading.
+  get placedAt(): string | null {
+    return this.vendorGroups[0]?.placed_at ?? null;
+  }
+
+  // "Thu, 27 Nov, 9:00 AM - 11:00 AM" -- null for Try & Buy orders and orders with no seller
+  // slot booked, so the template can skip the row entirely.
+  slotText(vo: ParentOrderVendorEntry): string {
+    const s = vo.delivery_slot;
+    if (!s || !s.slot_label) {
+      return '';
+    }
+    return s.slot_date ? `${dayLabel(s.slot_date)}, ${s.slot_label}` : s.slot_label;
   }
 
   get orderNumber(): string {

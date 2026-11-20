@@ -29,6 +29,9 @@
                   • {{ label }}
                 }
               </div>
+              @if (slotText(order); as slot) {
+                <div class="text-muted small">Delivery slot: {{ slot }}</div>
+              }
             </div>
             <div class="text-end">
               <div class="fw-semibold">{{ order.grand_total | currency: 'INR' : 'symbol' : '1.0-2' }}</div>

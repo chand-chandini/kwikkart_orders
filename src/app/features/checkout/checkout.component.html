@@ -174,48 +174,60 @@
           </div>
         }
 
-        @if (vendorSlots.sellersWithSlots().length) {
+        @if (cartService.cart().vendors.length) {
           <div class="card mb-3">
             <div class="card-header bg-white fw-semibold">Delivery slots</div>
             <div class="card-body">
-              @for (section of vendorSlots.sellersWithSlots(); track section.vendor_id; let last = $last) {
+              @if (vendorSlots.loadError()) {
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="retryVendorSlots()">
+                  {{ vendorSlots.loadError() }} Tap to retry.
+                </button>
+              } @else if (!vendorSlots.loaded()) {
+                <div class="text-muted small">Loading delivery slots…</div>
+              }
+              @for (section of vendorSlots.sections(); track section.vendor_id; let last = $last) {
                 <div [class.mb-3]="!last" [class.pb-3]="!last" [class.border-bottom]="!last">
-                  <div class="fw-semibold small mb-2">{{ vendorName(section.vendor_id) }}</div>
-                  <div class="d-flex flex-wrap gap-2 mb-2">
-                    @for (day of section.days; track day.date) {
-                      <button
-                        type="button"
-                        class="btn btn-sm"
-                        [class.btn-brand]="activeDayFor(section) === day.date"
-                        [class.btn-outline-secondary]="activeDayFor(section) !== day.date"
-                        (click)="setActiveDay(section.vendor_id, day.date)"
-                      >
-                        {{ day.date === section.today ? 'Today' : day.weekday + ', ' + (day.date | date: 'd MMM') }}
-                      </button>
-                    }
-                  </div>
-                  <div class="d-flex flex-wrap gap-2">
-                    @for (day of section.days; track day.date) {
-                      @if (day.date === activeDayFor(section)) {
-                        @for (slot of day.slots; track slot.slot_id) {
-                          <button
-                            type="button"
-                            class="btn btn-sm"
-                            [class.btn-brand]="vendorSlots.pickFor(section.vendor_id)?.slot_id === slot.slot_id && vendorSlots.pickFor(section.vendor_id)?.date === day.date"
-                            [class.btn-outline-secondary]="!(vendorSlots.pickFor(section.vendor_id)?.slot_id === slot.slot_id && vendorSlots.pickFor(section.vendor_id)?.date === day.date)"
-                            (click)="pickVendorSlot(section.vendor_id, slot.slot_id, day.date)"
-                          >
-                            {{ slot.label }}
-                            @if (slot.remaining <= 3) {
-                              <span class="small"> · {{ slot.remaining }} left</span>
-                            }
-                          </button>
+                  <div class="fw-semibold small mb-1">{{ vendorName(section.vendor_id) }}</div>
+                  <div class="small text-muted mb-2">For: {{ itemNamesFor(section.vendor_id) }}</div>
+                  @if (section.has_slots) {
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                      @for (day of section.days; track day.date) {
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          [class.btn-brand]="activeDayFor(section) === day.date"
+                          [class.btn-outline-secondary]="activeDayFor(section) !== day.date"
+                          (click)="setActiveDay(section.vendor_id, day.date)"
+                        >
+                          {{ day.date === section.today ? 'Today' : day.weekday + ', ' + (day.date | date: 'd MMM') }}
+                        </button>
+                      }
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                      @for (day of section.days; track day.date) {
+                        @if (day.date === activeDayFor(section)) {
+                          @for (slot of day.slots; track slot.slot_id) {
+                            <button
+                              type="button"
+                              class="btn btn-sm"
+                              [class.btn-brand]="vendorSlots.pickFor(section.vendor_id)?.slot_id === slot.slot_id && vendorSlots.pickFor(section.vendor_id)?.date === day.date"
+                              [class.btn-outline-secondary]="!(vendorSlots.pickFor(section.vendor_id)?.slot_id === slot.slot_id && vendorSlots.pickFor(section.vendor_id)?.date === day.date)"
+                              (click)="pickVendorSlot(section.vendor_id, slot.slot_id, day.date)"
+                            >
+                              {{ slot.label }}
+                              @if (slot.remaining <= 3) {
+                                <span class="small"> · {{ slot.remaining }} left</span>
+                              }
+                            </button>
+                          }
                         }
                       }
+                    </div>
+                    @if (vendorSlots.problemFor(section.vendor_id)) {
+                      <div class="small text-danger mt-1">{{ vendorSlots.problemFor(section.vendor_id) }}</div>
                     }
-                  </div>
-                  @if (vendorSlots.problemFor(section.vendor_id)) {
-                    <div class="small text-danger mt-1">{{ vendorSlots.problemFor(section.vendor_id) }}</div>
+                  } @else {
+                    <div class="small text-muted">No delivery slot available. These items will be delivered as usual.</div>
                   }
                 </div>
               }

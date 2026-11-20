@@ -45,6 +45,25 @@
   position: absolute;
   top: 8px;
   left: 8px;
+
+  // Clears the TRY & BUY ribbon's corner instead of sitting underneath it.
+  &.product-card__discount--pushed {
+    top: 32px;
+  }
+}
+
+.product-card__trybuy-ribbon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  background: #7b2ff7;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  padding: 4px 10px;
+  border-bottom-right-radius: 10px;
 }
 
 .text-truncate-2 {
@@ -68,5 +87,30 @@
   &:hover:not(:disabled) {
     background-color: var(--kk-brand-primary);
     color: #fff;
+  }
+}
+
+// Icon-only width when the Try & Buy button is sharing the row with it -- full-width
+// "Add to cart" text only renders when it has the row to itself (see template).
+.product-card__btn-icon {
+  flex: 0 0 auto;
+  width: 2.75rem;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.btn-trybuy {
+  background-color: #e91e63;
+  border-color: #e91e63;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background-color: #c2185b;
+    border-color: #c2185b;
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
   }
 }

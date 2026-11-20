@@ -48,6 +48,7 @@ export interface OrderVendorStatus {
   status: number;
   grand_total: number;
   item_count: number;
+  delivery_slot: BookedVendorSlot | null;
 }
 
 export interface Order {
@@ -109,6 +110,10 @@ export interface ParentOrderVendorEntry {
   items: OrderLineItem[];
   payment_method: string;
   payment_summary: PaymentSummary;
+  placed_at: string;
+  // The seller delivery slot booked on this order (2026-11-24), null for Try & Buy orders and
+  // orders placed before the feature/with a seller who has no slots.
+  delivery_slot: BookedVendorSlot | null;
 }
 
 export interface ParentOrder {
@@ -147,6 +152,7 @@ export interface OrderDetail {
   payment_summary: PaymentSummary;
   items: OrderLineItem[];
   address: Address | null;
+  delivery_slot: BookedVendorSlot | null;
 }
 
 export interface DeliverySlot {

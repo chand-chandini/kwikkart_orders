@@ -115,6 +115,16 @@ export class CheckoutComponent implements OnInit {
     return this.cartService.cart().vendors.find((v) => v.vendor_id === vendorId)?.vendor_name ?? 'Seller';
   }
 
+  // Mirrors CheckoutScreen.jsx's own "For: {item names}" line under each seller's slot section,
+  // so a buyer with more than one seller in the cart can tell which delivery a section is about.
+  itemNamesFor(vendorId: number): string {
+    return this.cartService
+      .cart()
+      .items.filter((item) => item.vendor_id === vendorId)
+      .map((item) => item.name)
+      .join(', ');
+  }
+
   activeDayFor(section: VendorSlotSection): string {
     const active = this.activeDayByVendor[section.vendor_id];
     if (active && section.days.some((d) => d.date === active)) return active;
@@ -123,6 +133,10 @@ export class CheckoutComponent implements OnInit {
 
   setActiveDay(vendorId: number, date: string): void {
     this.activeDayByVendor[vendorId] = date;
+  }
+
+  retryVendorSlots(): void {
+    this.vendorSlots.attach(this.orgContext.requireOrgId());
   }
 
   pickVendorSlot(vendorId: number, slotId: number, date: string): void {

@@ -5,8 +5,11 @@
     } @else {
       <div class="product-card__image product-card__image--placeholder">No image</div>
     }
+    @if (tryBuyAvailable) {
+      <span class="product-card__trybuy-ribbon">TRY & BUY</span>
+    }
     @if (discountPercent) {
-      <span class="badge bg-brand-secondary product-card__discount">{{ discountPercent }}% OFF</span>
+      <span class="badge bg-brand-secondary product-card__discount" [class.product-card__discount--pushed]="tryBuyAvailable">{{ discountPercent }}% OFF</span>
     }
     @if (!product.is_available || product.stock_qty <= 0) {
       <span class="badge bg-secondary product-card__discount" style="top: auto; bottom: 8px;">Out of stock</span>
@@ -26,33 +29,54 @@
         <span class="text-muted small text-decoration-line-through">{{ product.mrp | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
       }
     </div>
-    @if (singleCartItem) {
-      <div class="mt-auto mt-2" (click)="$event.preventDefault(); $event.stopPropagation()">
-        <app-qty-stepper
-          [qty]="singleCartItem.qty"
-          [min]="0"
-          [max]="product.stock_qty"
-          [disabled]="updatingQty"
-          [compact]="true"
-          (qtyChange)="onCartQtyChange($event)"
-        />
-      </div>
-    } @else {
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-brand mt-auto mt-2"
-        [disabled]="adding || !product.is_available || product.stock_qty <= 0"
-        (click)="quickAdd($event)"
-      >
-        @if (adding) {
-          <span class="spinner-border spinner-border-sm"></span>
-        } @else if (cartMatches.length > 1) {
-          In cart
-        } @else {
-          Add to cart
-        }
-      </button>
-    }
+    <div class="d-flex align-items-center gap-2 mt-auto mt-2">
+      @if (singleCartItem) {
+        <div (click)="$event.preventDefault(); $event.stopPropagation()">
+          <app-qty-stepper
+            [qty]="singleCartItem.qty"
+            [min]="0"
+            [max]="product.stock_qty"
+            [disabled]="updatingQty"
+            [compact]="true"
+            (qtyChange)="onCartQtyChange($event)"
+          />
+        </div>
+      } @else {
+        <button
+          type="button"
+          class="btn btn-sm btn-brand d-flex align-items-center justify-content-center gap-1"
+          [class.product-card__btn-icon]="tryBuyAvailable"
+          [class.flex-grow-1]="!tryBuyAvailable"
+          [disabled]="adding || !product.is_available || product.stock_qty <= 0"
+          (click)="quickAdd($event)"
+        >
+          @if (adding) {
+            <span class="spinner-border spinner-border-sm"></span>
+          } @else {
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+            </svg>
+            @if (!tryBuyAvailable) {
+              <span>{{ cartMatches.length > 1 ? 'In cart' : 'Add to cart' }}</span>
+            }
+          }
+        </button>
+      }
+      @if (tryBuyAvailable) {
+        <button
+          type="button"
+          class="btn btn-sm btn-trybuy flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+          [disabled]="!product.is_available || product.stock_qty <= 0"
+          (click)="goToTryBuy($event)"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9.5 12 3l9 6.5" /><path d="M5 10v10h14V10" />
+          </svg>
+          <span class="text-truncate">{{ tryBuyLabel }}</span>
+        </button>
+      }
+    </div>
   </div>
 </a>
 
