@@ -59,13 +59,25 @@
             <div class="small text-muted mt-1">Note: {{ req.note }}</div>
           }
 
-          @if (req.status === 'requested') {
-            <button type="button" class="btn btn-outline-danger btn-sm w-100 mt-3" [disabled]="cancellingId === req.id" (click)="cancel(req)">
-              @if (cancellingId === req.id) {
-                <span class="spinner-border spinner-border-sm me-1"></span>
+          @if (canShare(req) || req.status === 'requested') {
+            <div class="d-flex gap-2 mt-3">
+              @if (canShare(req)) {
+                <button type="button" class="btn tb-btn-outline btn-sm flex-grow-1" [disabled]="sharingId === req.id" (click)="share(req)">
+                  @if (sharingId === req.id) {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                  }
+                  Share
+                </button>
               }
-              Cancel booking
-            </button>
+              @if (req.status === 'requested') {
+                <button type="button" class="btn btn-outline-danger btn-sm flex-grow-1" [disabled]="cancellingId === req.id" (click)="cancel(req)">
+                  @if (cancellingId === req.id) {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                  }
+                  Cancel booking
+                </button>
+              }
+            </div>
           }
         </div>
       </div>

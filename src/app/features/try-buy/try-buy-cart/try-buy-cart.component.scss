@@ -1,3 +1,30 @@
+// "Try together" invite card -- mirrors kkpublicapp's cShareCard/cShareBtn styling (purple Try &
+// Buy theme). Stacks the button under the text on phones so the tap target never gets squeezed.
+.tb-share-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--kk-tb-soft);
+  border: 1px solid var(--kk-tb-border);
+  border-radius: 14px;
+  padding: 0.75rem 1rem;
+
+  &__icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .tb-share-card {
+    flex-wrap: wrap;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
 // The delivery-slot picker -- same fixed-overlay + header/body/footer convention as
 // location-picker-modal.component.scss, scoped here since it's specific to this page.
 

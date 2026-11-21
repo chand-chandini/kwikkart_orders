@@ -8,6 +8,8 @@ import { TryBuyCartService } from '../../../core/services/try-buy-cart.service';
 import { TryBuyService } from '../../../core/services/try-buy.service';
 import { CheckoutService } from '../../../core/services/checkout.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { ShareService } from '../../../core/services/share.service';
 import { Address, AddressPayload, PickedLocation } from '../../../core/models/address.model';
 import { AppError } from '../../../core/models/api-error.model';
 import {
@@ -21,7 +23,8 @@ import {
   TryBuySlotsResponse,
   dayLabel,
   lineIdOf,
-  toQuoteItems
+  toQuoteItems,
+  tryBuyShareMessage
 } from '../../../core/models/try-buy.model';
 import { QtyStepperComponent } from '../../../shared/components/qty-stepper/qty-stepper.component';
 import { LocationPickerModalComponent } from '../../../shared/components/location-picker-modal/location-picker-modal.component';
@@ -64,6 +67,8 @@ export class TryBuyCartComponent implements OnInit {
   private readonly tryBuyApi = inject(TryBuyService);
   private readonly checkout = inject(CheckoutService);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
+  private readonly shareService = inject(ShareService);
   private readonly router = inject(Router);
 
   readonly TRY_BUY_MAX_QTY = TRY_BUY_MAX_QTY;
@@ -91,6 +96,7 @@ export class TryBuyCartComponent implements OnInit {
   note = '';
   editingLineId: string | null = null;
   submitting = false;
+  sharing = false;
 
   get orgCode(): string {
     return this.orgContext.getCurrentCode() ?? '';
@@ -171,6 +177,13 @@ export class TryBuyCartComponent implements OnInit {
       !!this.sellerId &&
       !!this.slotPick
     );
+  }
+
+  // Sharing only needs a single seller's worth of items -- unlike canRequest it doesn't wait on
+  // an address/slot, since those are picked after the invite is sent (mirrors kkpublicapp's
+  // "Share Try & Buy" card, which sits above the booking-details form).
+  get canShare(): boolean {
+    return !!this.sellerId && this.items.length > 0 && !this.sharing;
   }
 
   get blocker(): string | null {
@@ -395,6 +408,40 @@ export class TryBuyCartComponent implements OnInit {
       this.addresses = [...(this.addresses ?? []), address];
       this.newAddress = { ...EMPTY_ADDRESS };
       this.selectAddress(address.id);
+    });
+  }
+
+  // "Share Try & Buy" (ported from kkpublicapp's TryAtHomeCartScreen#shareTryBuy): opens or
+  // refreshes a shareable booking for this list and hands the invite link/code to the device's
+  // share sheet. Friends who open the link land in the Kwik Kart app (public app), never on this
+  // web site -- the invite text/link is identical to the app's own share, and clicking it keeps
+  // the app's existing install/open redirect. The items stay in this cart either way.
+  shareTryBuy(): void {
+    const vendorId = this.sellerId;
+    if (!vendorId || !this.items.length) {
+      this.toast.error(`Keep one seller to share ${this.label}`);
+      return;
+    }
+    this.sharing = true;
+    this.tryBuyApi.createShare(toQuoteItems(this.items)).subscribe({
+      next: (result) => {
+        this.sharing = false;
+        const storeName = this.sellerById[vendorId]?.vendor_name || this.groups[0]?.vendorName || 'the store';
+        const slotText = this.slotPick ? `${this.dayLabelFor(this.slotPick.date)}, ${this.slotPick.label}` : null;
+        const message = tryBuyShareMessage({
+          code: result.code,
+          ownerName: this.auth.currentUser()?.name,
+          storeName,
+          slotText,
+          fee: this.sellerDeliveryCharge(vendorId),
+          label: this.label
+        });
+        this.shareService.share(message, `${this.label} invite`);
+      },
+      error: (err: AppError) => {
+        this.sharing = false;
+        this.toast.error(err.message || `Could not share ${this.label}`);
+      }
     });
   }
 

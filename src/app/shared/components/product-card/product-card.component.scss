@@ -41,29 +41,51 @@
   font-size: 0.85rem;
 }
 
-.product-card__discount {
+// Small corner tags, one per corner, sized to their own content -- never a full-width banner,
+// so even on a narrow 2-up mobile card they frame the photo instead of covering it.
+.product-card__badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
-
-  // Clears the TRY & BUY ribbon's corner instead of sitting underneath it.
-  &.product-card__discount--pushed {
-    top: 32px;
-  }
+  z-index: 1;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
 }
 
-.product-card__trybuy-ribbon {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
+.product-card__badge--discount {
+  top: 8px;
+  left: 8px;
+  background: var(--kk-brand-secondary);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  padding: 3px 6px;
+  border-radius: 5px;
+}
+
+// Icon-only (no banner text) -- what it means is already spelled out on the action button below;
+// a circular badge keeps the corner small no matter how long the seller's own try_buy.label is.
+.product-card__badge--trybuy {
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
   background: #7b2ff7;
   color: #fff;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.4px;
-  padding: 4px 10px;
-  border-bottom-right-radius: 10px;
+}
+
+.product-card__badge--oos {
+  bottom: 8px;
+  left: 8px;
+  background: rgba(33, 37, 41, 0.85);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 5px;
 }
 
 .text-truncate-2 {
@@ -90,8 +112,19 @@
   }
 }
 
-// Icon-only width when the Try & Buy button is sharing the row with it -- full-width
-// "Add to cart" text only renders when it has the row to itself (see template).
+// Guards against the exact failure the full-text buttons used to hit on a narrow 2-up card:
+// text wrapping to two lines (blowing out the card's height) or, for the flex-grow Try & Buy
+// button sharing the row with the icon-only cart button, overflowing past the card's edge
+// instead of the .text-truncate span on it actually ellipsing (a flex item won't shrink below
+// its content's natural width unless min-width is overridden to something smaller than auto).
+.product-card__btn {
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+}
+
+// Icon-only width when the Try & Buy button is sharing the row with it -- a short "Add"/"In
+// cart" label only renders when it has the row to itself (see template).
 .product-card__btn-icon {
   flex: 0 0 auto;
   width: 2.75rem;

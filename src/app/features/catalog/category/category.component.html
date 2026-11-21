@@ -75,9 +75,12 @@
         @if (loading) {
           <app-spinner label="Loading products..." />
         } @else if (products.length) {
+          <!-- No col-md-4 step: the 140px subcategory rail + 220px filter rail are fixed
+               sidebars from md up, so 3 columns there leaves each card too narrow -- stays at
+               col-6's 2 columns until lg has the width for 3. -->
           <div class="row g-3">
             @for (product of products; track product.id) {
-              <div class="col-6 col-md-4 col-xl-3">
+              <div class="col-6 col-lg-4 col-xl-3">
                 <app-product-card [product]="product" [orgCode]="orgCode" [orgId]="product.org_id" />
               </div>
             }

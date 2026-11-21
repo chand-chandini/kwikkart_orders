@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { CreateTryBuyRequestBody, TryBuyQuote, TryBuyQuoteItem, TryBuyRequest, TryBuySlotsResponse } from '../models/try-buy.model';
+import { CreateTryBuyRequestBody, TryBuyQuote, TryBuyQuoteItem, TryBuyRequest, TryBuyShareResult, TryBuySlotsResponse } from '../models/try-buy.model';
 
 // Try & Buy API (kkapi public_app/controllers/tryBuyCtrl.js). Separate from CartService/
 // CheckoutService -- nothing here touches the cart, coupons or payments.
@@ -39,6 +39,18 @@ export class TryBuyService {
   vendorSlots(vendorId: number): Observable<TryBuySlotsResponse> {
     return this.http
       .get<{ data: TryBuySlotsResponse }>(`${environment.apiBaseUrl}/ecommerce/try-buy/slots`, { params: { vendor_id: vendorId } })
+      .pipe(map((res) => res.data));
+  }
+
+  // Shared Try & Buy (kkapi tryBuyShareCtrl.create) -- opens or refreshes a shareable booking for
+  // these items (one seller only). Passing request_id links the share to an already-placed
+  // booking (shareTryBuyOrder's flow) instead of the pre-booking cart's own share.
+  createShare(items: TryBuyQuoteItem[], requestId?: number): Observable<TryBuyShareResult> {
+    return this.http
+      .post<{ data: TryBuyShareResult }>(`${environment.apiBaseUrl}/ecommerce/try-buy/shares`, {
+        items,
+        ...(requestId ? { request_id: requestId } : {})
+      })
       .pipe(map((res) => res.data));
   }
 }

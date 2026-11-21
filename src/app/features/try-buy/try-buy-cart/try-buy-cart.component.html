@@ -18,6 +18,24 @@
       This list is separate from your shopping cart. Cart coupons and offers don't apply here.
     </div>
 
+    @if (canShare) {
+      <div class="tb-share-card mb-3">
+        <div class="tb-share-card__icon">🔗</div>
+        <div class="flex-grow-1 min-w-0">
+          <div class="fw-semibold">Try together</div>
+          <div class="small text-muted">
+            Invite friends & family to add their own items to this booking — one delivery charge for everyone.
+          </div>
+        </div>
+        <button type="button" class="btn tb-btn-outline btn-sm flex-shrink-0" [disabled]="sharing" (click)="shareTryBuy()">
+          @if (sharing) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+          }
+          Share {{ label }}
+        </button>
+      </div>
+    }
+
     @if (quoteError) {
       <button type="button" class="alert alert-danger small w-100 text-start border-0" (click)="refreshQuote()">
         {{ quoteError }}. Tap to retry.

@@ -215,6 +215,69 @@ export const SLOT_STATE_TEXT: Record<string, string | null> = {
 // Server error codes that mean "the slot you picked changed" -- reload the slots.
 export const SLOT_ERROR_CODES = ['SLOT_FULL', 'SLOT_UNAVAILABLE', 'SLOT_REQUIRED'];
 
+// Shared Try & Buy (ported from kkpublicapp's api/endpoints/tryBuy.js#createShare +
+// sharedTryBuyUi.jsx) -- inviting friends to add their own items to the same booking before it's
+// confirmed, or to a placed booking (via request_id) until an hour before its slot.
+export interface TryBuyShareResult {
+  share_id: number;
+  code: string;
+}
+
+// Same host/path kkpublicapp's src/lib/share.js#tryBuyShareUrl uses -- kkapi's
+// public_app/routes/invite.js serves this unauthenticated and redirects straight to the Kwik Kart
+// app (installed -> opens it; not installed -> Play/App store, then the app after install). Always
+// the public prod host, never environment.apiBaseUrl -- recipients open this on their own phone,
+// so it can never point at a local dev backend.
+export function tryBuyShareUrl(code: string): string {
+  return `https://api.kwikkart.in/invite/trybuy/${encodeURIComponent(code)}`;
+}
+
+export interface TryBuyShareMessageOptions {
+  code: string;
+  ownerName?: string | null;
+  storeName: string;
+  slotText?: string | null;
+  fee?: number | null;
+  label?: string | null;
+}
+
+// Same wording as kkpublicapp's shareTryBuyInvite -- deliberately includes the typed-code
+// fallback for anyone who can't tap the link.
+export function tryBuyShareMessage(opts: TryBuyShareMessageOptions): string {
+  const firstName = String(opts.ownerName ?? '').trim().split(/\s+/)[0] || 'Your friend';
+  const label = opts.label || 'Try & Buy';
+  const feeText = opts.fee != null ? (opts.fee > 0 ? `₹${opts.fee}` : 'Free') : null;
+  const lines = [
+    `${firstName} invited you to ${label} from ${opts.storeName} on Kwik Kart.`,
+    opts.slotText ? `Delivery: ${opts.slotText}` : null,
+    `Add the items you want to try to the same booking — ${
+      feeText ? `one delivery charge (${feeText}) for everyone, ` : ''
+    }and pay only for what you keep.`,
+    '',
+    `Tap to join: ${tryBuyShareUrl(opts.code)}`,
+    `Or open Kwik Kart → Switch organisation → Join shared ${label} → code ${opts.code}`
+  ].filter((l): l is string => l !== null);
+  return lines.join('\n');
+}
+
+// The share payload for a placed request's lines -- ported from kkpublicapp's
+// sharedTryBuyUi.jsx#orderShareItems: dedupes by product+variant+colour (the server rejects
+// duplicate lines) and clamps qty to TRY_BUY_MAX_QTY.
+export function orderShareItems(lines: TryBuyRequestLine[]): TryBuyQuoteItem[] {
+  const byKey = new Map<string, TryBuyQuoteItem>();
+  for (const l of lines) {
+    if (!l.product_id) {
+      continue;
+    }
+    const variantId = l.variant_id ?? null;
+    const color = l.color || null;
+    const key = lineIdOf(l.product_id, variantId, color);
+    const prevQty = byKey.get(key)?.qty ?? 0;
+    byKey.set(key, { product_id: l.product_id, variant_id: variantId, color, qty: prevQty + Math.max(1, Math.round(Number(l.qty) || 1)) });
+  }
+  return [...byKey.values()].map((it) => ({ ...it, qty: Math.min(it.qty, TRY_BUY_MAX_QTY) }));
+}
+
 export interface TryBuyRequest {
   id: number;
   vendor_id: number;

@@ -5,14 +5,18 @@
     } @else {
       <div class="product-card__image product-card__image--placeholder">No image</div>
     }
-    @if (tryBuyAvailable) {
-      <span class="product-card__trybuy-ribbon">TRY & BUY</span>
-    }
     @if (discountPercent) {
-      <span class="badge bg-brand-secondary product-card__discount" [class.product-card__discount--pushed]="tryBuyAvailable">{{ discountPercent }}% OFF</span>
+      <span class="product-card__badge product-card__badge--discount">{{ discountPercent }}% OFF</span>
+    }
+    @if (tryBuyAvailable) {
+      <span class="product-card__badge product-card__badge--trybuy" [attr.title]="tryBuyLabel + ' available'" [attr.aria-label]="tryBuyLabel + ' available'">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9.5 12 3l9 6.5" /><path d="M5 10v10h14V10" />
+        </svg>
+      </span>
     }
     @if (!product.is_available || product.stock_qty <= 0) {
-      <span class="badge bg-secondary product-card__discount" style="top: auto; bottom: 8px;">Out of stock</span>
+      <span class="product-card__badge product-card__badge--oos">Out of stock</span>
     }
   </div>
   <div class="card-body d-flex flex-column">
@@ -44,10 +48,11 @@
       } @else {
         <button
           type="button"
-          class="btn btn-sm btn-brand d-flex align-items-center justify-content-center gap-1"
+          class="btn btn-sm btn-brand product-card__btn d-flex align-items-center justify-content-center gap-1"
           [class.product-card__btn-icon]="tryBuyAvailable"
           [class.flex-grow-1]="!tryBuyAvailable"
           [disabled]="adding || !product.is_available || product.stock_qty <= 0"
+          [attr.aria-label]="tryBuyAvailable ? 'Add to cart' : null"
           (click)="quickAdd($event)"
         >
           @if (adding) {
@@ -58,7 +63,7 @@
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
             </svg>
             @if (!tryBuyAvailable) {
-              <span>{{ cartMatches.length > 1 ? 'In cart' : 'Add to cart' }}</span>
+              <span class="text-truncate">{{ cartMatches.length > 1 ? 'In cart' : 'Add' }}</span>
             }
           }
         </button>
@@ -66,13 +71,11 @@
       @if (tryBuyAvailable) {
         <button
           type="button"
-          class="btn btn-sm btn-trybuy flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+          class="btn btn-sm btn-trybuy product-card__btn flex-grow-1 d-flex align-items-center justify-content-center"
           [disabled]="!product.is_available || product.stock_qty <= 0"
+          [attr.title]="tryBuyLabel"
           (click)="goToTryBuy($event)"
         >
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9.5 12 3l9 6.5" /><path d="M5 10v10h14V10" />
-          </svg>
           <span class="text-truncate">{{ tryBuyLabel }}</span>
         </button>
       }

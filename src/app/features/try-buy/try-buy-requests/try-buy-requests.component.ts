@@ -3,7 +3,9 @@ import { Component, OnInit, inject } from '@angular/core';
 
 import { TryBuyService } from '../../../core/services/try-buy.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { TryBuyRequest, TryBuyRequestLine, dayLabel } from '../../../core/models/try-buy.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { ShareService } from '../../../core/services/share.service';
+import { TryBuyRequest, TryBuyRequestLine, dayLabel, orderShareItems, tryBuyShareMessage } from '../../../core/models/try-buy.model';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
@@ -30,11 +32,14 @@ const STATUS_LABEL: Record<StatusKey, string> = {
 export class TryBuyRequestsComponent implements OnInit {
   private readonly tryBuyApi = inject(TryBuyService);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
+  private readonly shareService = inject(ShareService);
 
   loading = true;
   requests: TryBuyRequest[] = [];
   error: string | null = null;
   cancellingId: number | null = null;
+  sharingId: number | null = null;
 
   ngOnInit(): void {
     this.load();
@@ -80,6 +85,43 @@ export class TryBuyRequestsComponent implements OnInit {
       return '';
     }
     return req.slot_date ? `${dayLabel(req.slot_date)}, ${req.slot_label}` : req.slot_label;
+  }
+
+  // Rejected/cancelled bookings have nothing left to invite anyone into -- the server enforces
+  // this too (TRY_BUY_ORDER_NOT_SHAREABLE) along with the one-hour-before-slot cutoff, so this is
+  // just hiding the button where it would always fail rather than the only guard.
+  canShare(req: TryBuyRequest): boolean {
+    return req.status === 'requested' || req.status === 'accepted';
+  }
+
+  // "Share Try & Buy" on a placed booking -- ported from kkpublicapp's OrderDetailsScreen +
+  // sharedTryBuyUi.jsx#shareTryBuyOrder. Opens a share tied to this request (so it takes its slot
+  // and closes for adding an hour before it) and hands the invite to the device's share sheet;
+  // friends who open the link land in the Kwik Kart app, not this web site.
+  share(req: TryBuyRequest): void {
+    const items = orderShareItems(req.items);
+    if (!items.length) {
+      this.toast.error('Nothing to share in this booking');
+      return;
+    }
+    this.sharingId = req.id;
+    this.tryBuyApi.createShare(items, req.id).subscribe({
+      next: (result) => {
+        this.sharingId = null;
+        const message = tryBuyShareMessage({
+          code: result.code,
+          ownerName: this.auth.currentUser()?.name,
+          storeName: req.vendor_name,
+          slotText: this.slotText(req) || null,
+          fee: req.delivery_charge
+        });
+        this.shareService.share(message, 'Try & Buy invite');
+      },
+      error: (err) => {
+        this.sharingId = null;
+        this.toast.error(err.message || 'Could not share this booking');
+      }
+    });
   }
 
   cancel(req: TryBuyRequest): void {
