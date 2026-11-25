@@ -32,7 +32,7 @@ const EMPTY_ADDRESS: AddressPayload = {
 export class AddressesComponent implements OnInit {
   private readonly checkout = inject(CheckoutService);
   private readonly toast = inject(ToastService);
-
+  isEditing = false;
   loading = true;
   addresses: Address[] = [];
   showForm = false;
@@ -54,6 +54,7 @@ export class AddressesComponent implements OnInit {
 
   startAdd(): void {
     this.editingId = null;
+    this.isEditing = false; 
     this.form = { ...EMPTY_ADDRESS };
     this.formError = null;
     this.showForm = true;
@@ -61,6 +62,7 @@ export class AddressesComponent implements OnInit {
 
   startEdit(address: Address): void {
     this.editingId = address.id;
+    this.isEditing = true;
     const { id, ...rest } = address;
     this.form = { ...rest };
     this.formError = null;

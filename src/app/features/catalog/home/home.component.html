@@ -1,88 +1,197 @@
+
 @if (loading) {
-  <app-spinner label="Loading store..." />
+  <app-spinner />
 } @else {
-  <div class="container py-4">
+  <main class="premium-home-wrapper">
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="hero-background">
+        <div class="hero-content">
+          <span class="hero-eyebrow">THE NEW SEASON COLLECTION</span>
+
+          <h1>
+            Curated Elegance<br />
+            <span>For Every Little Moment</span>
+          </h1>
+
+          <p>
+            Discover thoughtfully selected styles, timeless designs
+            and everyday favourites for your little ones.
+          </p>
+
+          <div class="hero-actions">
+            @if (categorySections.length) {
+              <a
+                class="hero-primary-btn"
+                [routerLink]="['/o', orgCode, 'c', categorySections[0].categories[0].id]">
+                Explore Collection
+                <span>→</span>
+              </a>
+            }
+
+            <!-- DISCOVER MORE: SCROLL TO PRODUCTS -->
+            <button
+              type="button"
+              class="hero-secondary-btn"
+              (click)="scrollToProducts()">
+              Discover More
+            </button>
+          </div>
+
+          <div class="hero-note">
+            <span class="hero-note-line"></span>
+            STYLE THAT MAKES EVERY MOMENT SPECIAL
+          </div>
+        </div>
+
+        <div class="hero-decoration">
+          <span class="decoration-circle"></span>
+          <span class="decoration-text">CURATED<br />WITH LOVE</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- BANNERS -->
     @if (banners.length) {
-      <div id="homeBanners" class="carousel slide banner-carousel mb-4" data-bs-ride="carousel">
-        <div class="carousel-inner rounded-4 overflow-hidden">
-          @for (banner of banners; track banner.id; let i = $index) {
-            <div class="carousel-item" [class.active]="i === 0">
-              <div class="banner-frame">
-                <img [src]="banner.banner_image" [alt]="banner.title || ''" class="banner-image" />
-                @if (banner.title) {
-                  <div class="banner-caption">{{ banner.title }}</div>
-                }
-              </div>
+      <section class="banner-section">
+        <div class="banner-grid">
+          @for (banner of banners; track $index) {
+            <div class="banner-card">
+              @if (banner.banner_image) {
+                <img
+                  [src]="banner.banner_image"
+                  [alt]="banner.title || 'Store banner'"
+                  class="hero-banner-image"
+                  loading="lazy"
+                />
+              }
             </div>
           }
         </div>
-        @if (banners.length > 1) {
-          <button class="carousel-control-prev" type="button" data-bs-target="#homeBanners" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#homeBanners" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-          </button>
-          <div class="carousel-indicators banner-indicators">
-            @for (banner of banners; track banner.id; let i = $index) {
-              <button
-                type="button"
-                data-bs-target="#homeBanners"
-                [attr.data-bs-slide-to]="i"
-                [class.active]="i === 0"
-              ></button>
-            }
-          </div>
-        }
-      </div>
+      </section>
     }
 
-    @if (loading) {
-      <app-spinner label="Loading categories..." />
-    } @else if (categoriesError) {
-      <div class="alert alert-warning" role="alert">{{ categoriesError }}</div>
-    } @else if (categorySections.length) {
-      @for (section of categorySections; track section.key) {
-        <section class="department-section mb-4">
-          <h5 class="fw-bold fst-italic mb-3">{{ section.departmentName }}</h5>
-          <div class="row g-3 mb-4">
+    <!-- CATEGORIES -->
+    @if (hasCategories) {
+      <section class="departments-section section-container">
+
+        <div class="section-heading">
+          <div>
+            <span class="section-eyebrow">EXPLORE OUR WORLD</span>
+            <h2>Shop by Department</h2>
+            <p>Find something special for every occasion.</p>
+          </div>
+        </div>
+
+        <!-- ALL CATEGORIES IN ONE GRID -->
+        <div class="department-grid">
+
+          @for (section of categorySections; track section.key) {
             @for (category of section.categories; track category.id) {
-              <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                <a
-                  [routerLink]="['/o', orgCode, 'c', category.id]"
-                  class="department-category-tile text-decoration-none text-reset d-flex flex-column"
-                >
-                  <span class="department-category-tile__name text-truncate-2">{{ category.name }}</span>
+
+              <a
+                class="department-card"
+                [routerLink]="['/o', orgCode, 'c', category.id]">
+
+                <div class="department-image">
+
                   @if (category.image_url) {
-                    <img [src]="category.image_url" [alt]="category.name" class="department-category-tile__image" />
+                    <img
+                      [src]="category.image_url"
+                      [alt]="category.name"
+                      loading="lazy"
+                    />
                   } @else {
-                    <span class="department-category-tile__icon">{{ category.icon || '🛍️' }}</span>
+                    <div class="department-image-placeholder">
+                      <span>✦</span>
+                    </div>
                   }
-                </a>
-              </div>
+
+                  <span class="department-arrow">↗</span>
+
+                </div>
+
+                <div class="department-info">
+                  <h4>{{ category.name }}</h4>
+                  <span>Explore Collection</span>
+                </div>
+
+              </a>
+
             }
-          </div>
-        </section>
-      }
-    } @else {
-      <app-empty-state icon="🛍️" title="No categories available" message="This store has not added products to any categories yet." />
+          }
+
+        </div>
+
+      </section>
     }
 
-    <h5 class="fw-bold mb-3">Popular products</h5>
-    @if (products.length) {
-      <div class="row g-3">
-        @for (product of products; track product.id) {
-          <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-            <app-product-card [product]="product" [orgCode]="orgCode" [orgId]="product.org_id" />
-          </div>
-        }
+    <!-- FEATURED PRODUCTS -->
+    <section
+      id="products-row"
+      class="products-section section-container">
+
+      <div class="section-heading">
+        <div>
+          <span class="section-eyebrow">HANDPICKED FOR YOU</span>
+          <h2>Featured Products</h2>
+          <p>Discover our latest additions and customer favourites.</p>
+        </div>
       </div>
-    } @else {
-      <app-empty-state icon="🛒" title="No products yet" message="This store hasn't added products yet." />
-    }
-  </div>
 
-  @if (showAppDownloadModal) {
-    <app-app-download-modal (closed)="showAppDownloadModal = false" />
-  }
+      @if (hasProducts) {
+        <div class="products-grid">
+          @for (product of products; track product.id) {
+            <app-product-card
+              [product]="product"
+              [orgCode]="orgCode"
+              [orgId]="orgId">
+            </app-product-card>
+          }
+        </div>
+      } @else {
+        <div class="empty-products">
+          <app-empty-state
+            title="No products available"
+            message="Please check back soon for new arrivals." />
+        </div>
+      }
+
+    </section>
+
+    <!-- TRY AND BUY -->
+    <section class="try-buy-section">
+      <div class="try-buy-content">
+        <span class="section-eyebrow">A BETTER WAY TO SHOP</span>
+        <h2>Love it before you buy it.</h2>
+
+        <p>
+          Enjoy a convenient shopping experience with our Try & Buy service.
+          Choose your favourites and explore the collection.
+        </p>
+
+        <a
+          class="try-buy-button"
+          [routerLink]="['/o', orgCode, 'cart']"
+          [queryParams]="{tab: 'try-buy'}">
+          Explore Try & Buy <span>→</span>
+        </a>
+      </div>
+
+      <div class="try-buy-decoration">
+        <span>THE</span>
+        <strong>TRY<br />& BUY</strong>
+        <span>EXPERIENCE</span>
+      </div>
+    </section>
+
+  </main>
+}
+
+<!-- APP DOWNLOAD MODAL -->
+@if (showAppDownloadModal) {
+  <app-app-download-modal
+    (closed)="closeAppDownloadModal()">
+  </app-app-download-modal>
 }

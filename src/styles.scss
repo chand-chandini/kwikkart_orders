@@ -1,44 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap');
 @import "bootstrap/scss/bootstrap";
 
+/* =====================================================
+   1. GLOBAL THEME
+===================================================== */
+
 :root {
+  /* New Premium Palette */
+  --kk-forest-green: #1a7f3c;
+  --kk-sand-gold: #e2c191;
+  --kk-bg-color: #fdfdfc;
+  --kk-surface-color: #ffffff;
+  --kk-text-main: #1a1a1a;
+  --kk-text-muted: #6b7280;
+  --kk-border-color: #e5e7eb;
+  --kk-card-bg: #f5f5f4;
+
+  /* Typography */
+  --kk-font-serif: 'Playfair Display', serif;
+  --kk-font-sans: 'Inter', sans-serif;
+  
+  /* Existing Variables */
   --kk-brand-primary: #1a7f3c;
-  --kk-brand-primary-dark: #125c2b;
-  --kk-brand-secondary: #ff8c00;
-  --kk-brand-accent: #ffb020;
-  --kk-brand-bg: #f7f8fa;
+  --kk-brand-primary-dark: #072518;
+  --kk-brand-accent: #e2c191;
+  --kk-brand-bg: #fdfdfc;
   --kk-brand-surface: #ffffff;
-  --kk-brand-text: #1f2328;
+  --kk-brand-text: #1a1a1a;
   --kk-brand-muted: #6b7280;
-  --kk-font-family: "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
-  // Try & Buy (ported from kkpublicapp's TryAtHomeCard.jsx TRY_COLORS) -- purple, not the
-  // storefront green, so it reads as a different path from "Add to cart" at a glance.
-  --kk-tb-main: #6d3fc0;
-  --kk-tb-soft: #f3edfc;
-  --kk-tb-border: #d9c9f2;
 }
 
 html, body {
   height: 100%;
-  background-color: var(--kk-brand-bg);
-  color: var(--kk-brand-text);
-  font-family: var(--kk-font-family);
+  background-color: var(--kk-bg-color);
+  color: var(--kk-text-main);
+  font-family: var(--kk-font-sans);
+  overflow-x: hidden;
 }
 
-// Google Places autocomplete's suggestion dropdown (.pac-container) is appended straight to
-// <body>, outside any component's own scoped styles, so it can only be targeted globally like
-// this. Its own default z-index sits below our modal overlays (location-picker-modal is 1065),
-// so inside that modal the dropdown rendered behind the dialog -- invisible, which read as
-// "search returns nothing" even though suggestions were there the whole time.
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--kk-font-serif);
+  font-weight: 600;
+  color: var(--kk-text-main);
+}
+a {
+  color: var(--kk-brand-primary);
+}
+
 .pac-container {
   z-index: 2000 !important;
 }
+
+/* =====================================================
+   2. BRAND BUTTONS & TEXT
+===================================================== */
 
 .btn-brand {
   background-color: var(--kk-brand-primary);
   border-color: var(--kk-brand-primary);
   color: #fff;
 
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     background-color: var(--kk-brand-primary-dark);
     border-color: var(--kk-brand-primary-dark);
     color: #fff;
@@ -53,9 +76,24 @@ html, body {
   background-color: var(--kk-brand-secondary) !important;
 }
 
-a {
+.btn-outline-brand {
   color: var(--kk-brand-primary);
+  border-color: var(--kk-brand-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--kk-brand-primary);
+    color: #fff;
+  }
 }
+
+.badge-brand {
+  background: var(--kk-brand-primary);
+  color: #fff;
+}
+
+/* =====================================================
+   3. BANNERS
+===================================================== */
 
 .banner-frame {
   position: relative;
@@ -130,6 +168,10 @@ a {
   }
 }
 
+/* =====================================================
+   4. DEPARTMENT CATEGORIES
+===================================================== */
+
 .department-category-tile {
   width: 100%;
   min-height: 180px;
@@ -146,9 +188,9 @@ a {
 }
 
 .department-category-tile__name {
-  font-size: 1.05rem;
-  font-weight: 650;
-  line-height: 1.2;
+  font-size: 1.25rem !important;
+  font-weight: 7000;
+  line-height: 1.3;
   color: var(--kk-brand-text);
 }
 
@@ -164,6 +206,19 @@ a {
   margin: auto;
   font-size: 2.5rem;
 }
+
+.view-all-link {
+  color: var(--kk-brand-primary);
+
+  &:hover,
+  &:focus {
+    color: var(--kk-brand-primary-dark);
+  }
+}
+
+/* =====================================================
+   5. CATEGORY BROWSING
+===================================================== */
 
 .category-browse__search {
   width: min(250px, 42vw);
@@ -240,75 +295,6 @@ a {
   padding: 16px;
 }
 
-@media (max-width: 575.98px) {
-  .department-category-tile {
-    min-height: 160px;
-    padding: 12px;
-    border-radius: 20px;
-  }
-
-  .department-category-tile__name {
-    font-size: 0.95rem;
-  }
-
-  .category-browse__header {
-    flex-wrap: wrap;
-  }
-
-  .category-browse__header h4 {
-    font-size: 1.15rem;
-  }
-
-  .category-browse__search {
-    width: 100%;
-    order: 1;
-  }
-
-  .category-browse__layout {
-    display: flex;
-    flex-direction: column;
-    min-height: auto;
-  }
-
-  .category-browse__sidebar {
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 10px 0;
-    border-right: 0;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  // Filters column collapses behind the toolbar's "Filters" button below ~768px (see the
-  // shared media query further down) -- order: 0 puts it right after the subcategory rail,
-  // above the product grid, when toggled open.
-  .category-browse__filters,
-  .search-results__filters {
-    order: 0;
-  }
-
-  .category-browse__subcategory {
-    flex: 0 0 82px;
-    min-height: 100px;
-  }
-
-  .category-browse__subcategory-image {
-    width: 58px;
-    height: 58px;
-  }
-
-  .category-browse__products {
-    padding: 16px 0;
-  }
-}
-
-.view-all-link {
-  color: var(--kk-brand-primary);
-
-  &:hover, &:focus {
-    color: var(--kk-brand-primary-dark);
-  }
-}
-
 .subcategory-tile {
   position: relative;
   width: 100%;
@@ -348,6 +334,11 @@ a {
   font-size: 2rem;
 }
 
+.subcategory-scroller {
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
 .text-truncate-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -355,20 +346,9 @@ a {
   overflow: hidden;
 }
 
-.btn-outline-brand {
-  color: var(--kk-brand-primary);
-  border-color: var(--kk-brand-primary);
-
-  &:hover:not(:disabled) {
-    background-color: var(--kk-brand-primary);
-    color: #fff;
-  }
-}
-
-.subcategory-scroller {
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
-}
+/* =====================================================
+   6. PRODUCT GALLERY & VARIANTS
+===================================================== */
 
 .product-gallery__frame {
   position: relative;
@@ -380,10 +360,6 @@ a {
 }
 
 .product-gallery__main {
-  // See product-card.component.scss for why this is absolute + inset rather than width/height:
-  // 100% directly on the <img> — aspect-ratio applied straight to an img (a replaced, inline-by-
-  // default element) doesn't reliably constrain it the way it does on a block wrapper div; the
-  // photo was rendering at its natural width instead of fitting the frame.
   position: absolute;
   inset: 0;
   display: block;
@@ -433,9 +409,6 @@ a {
   }
 }
 
-// Size/pack picker on the product-detail page -- a 2-up grid of cards (name + its own price),
-// filled brand color when selected, matching the reference design instead of the old pill
-// buttons (which didn't have room to show a per-size price at a glance).
 .variant-option {
   border: 1.5px solid #e5e7eb;
   background: #fff;
@@ -450,8 +423,6 @@ a {
   }
 }
 
-// auto-fit keeps every tile the same width/height regardless of label length, instead of
-// Bootstrap's row-cols-2 (which only fixes the column count, not the row height).
 .size-option-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -480,8 +451,10 @@ a {
   padding: 1rem 1.1rem;
 }
 
-// Qty stepper + Add to cart row (product detail page) -- the stepper is already 44px tall on its
-// own, this just matches the button to it and lays them out in one row.
+/* =====================================================
+   7. QUANTITY & CART
+===================================================== */
+
 .qty-add-row {
   display: flex;
   align-items: center;
@@ -511,9 +484,6 @@ a {
   background: #f3f4f6;
 }
 
-// Image + name/price + (qty-stepper, line total, remove) in one row on desktop; the actions
-// group (the widest part: stepper + price + remove) drops to its own full-width line on narrow
-// screens instead of overflowing/crowding the row.
 .cart-item-row {
   display: flex;
   align-items: center;
@@ -552,7 +522,8 @@ a {
   color: #b91c1c;
   flex-shrink: 0;
 
-  &:hover:not(:disabled), &:focus:not(:disabled) {
+  &:hover:not(:disabled),
+  &:focus:not(:disabled) {
     background: rgba(185, 28, 28, 0.08);
   }
 
@@ -561,16 +532,9 @@ a {
   }
 }
 
-// Below ~sm, the image+name row and the actions row (stepper/price/remove) stack full-width --
-// the actions row starts flush at the card's left edge rather than indenting under the image
-// (the old margin-left: 76px, which only ever matched a 64px image + 12px gap by coincidence
-// and broke the moment either changed), so the row reads as one clean left-to-right line.
-@media (max-width: 575.98px) {
-  .cart-item-row__actions {
-    flex-basis: 100%;
-    justify-content: space-between;
-  }
-}
+/* =====================================================
+   8. LABEL CHIPS
+===================================================== */
 
 .label-chip-group {
   display: flex;
@@ -597,35 +561,9 @@ a {
   }
 }
 
-// ---- Segmented tab toggle (Cart/Try & Buy, Orders/Bookings) ----
-
-.kk-tab-toggle {
-  display: inline-flex;
-  gap: 0.25rem;
-  background: #f1f2f4;
-  border-radius: 999px;
-  padding: 0.25rem;
-  margin-bottom: 1rem;
-
-  button {
-    border: none;
-    background: transparent;
-    border-radius: 999px;
-    padding: 0.45rem 1.1rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--kk-brand-text);
-    opacity: 0.65;
-
-    &.active {
-      background: #fff;
-      opacity: 1;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-    }
-  }
-}
-
-// ---- Try & Buy (product detail card, try-buy cart + bookings pages) ----
+/* =====================================================
+   9. TRY & BUY
+===================================================== */
 
 .tb-card {
   background: var(--kk-tb-soft);
@@ -678,7 +616,8 @@ a {
   padding: 0.65rem 1rem;
   font-weight: 700;
 
-  &:hover:not(:disabled), &:focus:not(:disabled) {
+  &:hover:not(:disabled),
+  &:focus:not(:disabled) {
     background: #5b32a3;
     border-color: #5b32a3;
     color: #fff;
@@ -707,7 +646,6 @@ a {
   font-weight: 700;
 }
 
-// "My bookings" status badges -- colours mirror kkpublicapp's TryBuyRequestsScreen.jsx STATUS map.
 .tb-status {
   font-weight: 700;
 
@@ -716,7 +654,8 @@ a {
     color: var(--kk-tb-main);
   }
 
-  &--accepted, &--delivered {
+  &--accepted,
+  &--delivered {
     background: #ecfdf3;
     color: #067647;
   }
@@ -737,22 +676,48 @@ a {
   }
 }
 
-.address-option {
-  cursor: pointer;
+
+/* Highlighted Share Booking Button */
+.tb-btn-share {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0.5rem 1rem;
+
+  background: #eaf7ee;
+  border: 1.5px solid #1a7f3c;
+  color: #166534;
+
+  border-radius: 8px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    background: #1a7f3c;
+    border-color: #1a7f3c;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(26, 127, 60, 0.2);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
 }
 
-.address-option--active {
-  border-color: var(--kk-brand-primary) !important;
-  background: rgba(26, 127, 60, 0.05);
-}
 
-.auth-otp-input {
-  font-size: 1.5rem;
-  letter-spacing: 0.5rem;
-}
+/* =====================================================
+   10. COUPONS
+===================================================== */
 
-// Seller/platform coupon rows (cart page + checkout summary) -- applied/not-applied/action states
-// ported from kkpublicapp's CheckoutScreen.jsx coupon rows.
 .coupon-row {
   display: flex;
   align-items: center;
@@ -798,12 +763,9 @@ a {
   opacity: 0.6;
 }
 
-// ---- Product listing filters/sort (category + search pages) ----
-
-.badge-brand {
-  background: var(--kk-brand-primary);
-  color: #fff;
-}
+/* =====================================================
+   11. PRODUCT FILTERS & SEARCH
+===================================================== */
 
 .product-toolbar {
   display: flex;
@@ -823,7 +785,7 @@ a {
 }
 
 .product-toolbar__filters-btn {
-  display: none; // only meaningful once the filter panel can be hidden -- see the breakpoint below
+  display: none;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
@@ -840,10 +802,7 @@ a {
 }
 
 .filter-panel {
-  // Left inset so the panel's content doesn't sit flush against the subcategory rail's
-  // border-right (or the sheet edge in the mobile drawer) -- the wrapper (.category-browse__filters
-  // / .search-results__filters) only handles vertical alignment with its siblings, not this.
-  padding: 0 16px 16px 16px;
+  padding: 0 16px 16px;
 }
 
 .filter-panel__header {
@@ -890,9 +849,6 @@ a {
   }
 }
 
-// Search results: filter panel + product grid, same two-column idea as the category page's
-// three-column layout (subcategory rail + filters + products) minus the rail. Top padding
-// matches .category-browse__sidebar/__products (16px) so all columns start on the same line.
 .search-results__layout {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
@@ -908,9 +864,6 @@ a {
   padding-top: 16px;
 }
 
-// The filter panel's drawer chrome (title bar + close + "Show results" footer) is mobile-only
-// scaffolding around <app-product-filter-panel> -- on desktop the panel is a permanent sidebar
-// with no need to close it, so this chrome stays hidden there (see the breakpoint below).
 .filter-drawer__sheet {
   height: 100%;
   display: flex;
@@ -927,11 +880,584 @@ a {
   flex: 1 1 auto;
 }
 
-// Below ~768px the filter panel becomes a bottom-sheet drawer (fixed, dimmed backdrop, slides
-// up from the bottom) behind the toolbar's "Filters" button, instead of a permanent sidebar
-// eating width next to a cramped product grid -- same breakpoint the category rail goes
-// horizontal at, and the same fixed-overlay + header/close/footer convention as
-// location-picker-modal.component.scss.
+/* =====================================================
+   12. ACCOUNT PAGE - ORDERS & BOOKINGS
+===================================================== */
+
+.account-page {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 22px 4.5% 0;
+}
+
+.account-page .page-header {
+  padding-bottom: 0;
+  margin-bottom: 18px;
+}
+
+.account-page .page-title {
+  font-size: 30px;
+  font-weight: 750;
+  line-height: 1.2;
+  color: var(--kk-brand-text);
+  letter-spacing: -0.02em;
+}
+
+.account-page .page-subtitle {
+  color: var(--kk-brand-muted);
+  font-size: 16px;
+}
+
+/* Orders and bookings tabs */
+.kk-tab-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 0;
+  background: #eef0f3;
+  border-radius: 999px;
+
+  button {
+    border: none;
+    background: transparent;
+    border-radius: 999px;
+    padding: 10px 26px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--kk-brand-text);
+    opacity: 0.65;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &.active {
+      background: #fff;
+      opacity: 1;
+      color: var(--kk-brand-primary);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+.account-content {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 18px 4.5% 30px;
+}
+
+/* Booking section */
+.bookings-content.container {
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 4.5%;
+  padding-right: 4.5%;
+  box-sizing: border-box;
+}
+
+.bookings-content app-try-buy-requests {
+  display: block;
+  width: 100%;
+  max-width: none;
+}
+
+.try-buy-bookings {
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 10px 0 24px;
+}
+
+.try-buy-bookings > h4 {
+  margin-bottom: 18px !important;
+  font-size: 28px;
+  font-weight: 750;
+  color: var(--kk-brand-text);
+}
+
+.try-buy-booking-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.try-buy-booking-card {
+  width: 100%;
+  max-width: none;
+  margin-bottom: 16px !important;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.035);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  }
+
+  .card-body {
+    padding: 20px 22px;
+  }
+
+  .cart-item-image {
+    width: 76px;
+    height: 84px;
+    flex-shrink: 0;
+    object-fit: contain;
+    border-radius: 9px;
+    background: #f5f5f5;
+  }
+}
+
+/* =====================================================
+   13. ORDER CARDS
+===================================================== */
+
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    border-color: #e0e3e8;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f4f5f7;
+    background-color: #fafbfc;
+    border-radius: 16px 16px 0 0;
+  }
+
+  &__id-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--kk-brand-muted);
+    font-weight: 600;
+  }
+
+  &__id {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--kk-brand-text);
+  }
+
+  &__price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--kk-brand-text);
+  }
+
+  &__body {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  &__slot {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f0fdf4;
+    color: #166534;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    width: fit-content;
+    border: 1px solid #dcfce7;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f4f5f7;
+  }
+
+  &__action-hint {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--kk-brand-primary);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.2s ease;
+  }
+
+  &:hover &__action-hint {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.order-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--kk-brand-muted);
+  font-weight: 500;
+}
+
+.order-meta-icon {
+  font-size: 1.1rem;
+  opacity: 0.8;
+}
+
+.order-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.bg-success,
+  &.badge-delivered {
+    background-color: #ecfdf3 !important;
+    color: #067647 !important;
+    border: 1px solid #abefc6;
+  }
+
+  &.bg-info,
+  &.badge-out-for-delivery {
+    background-color: #eff8ff !important;
+    color: #175cd3 !important;
+    border: 1px solid #b2ddff;
+  }
+
+  &.bg-warning,
+  &.badge-placed {
+    background-color: #fffaeb !important;
+    color: #b54708 !important;
+    border: 1px solid #fedf89;
+  }
+
+  &.bg-danger,
+  &.badge-cancelled {
+    background-color: #fef3f2 !important;
+    color: #b42318 !important;
+    border: 1px solid #fecdca;
+  }
+}
+
+/* =====================================================
+   14. PROFILE FORM
+===================================================== */
+
+.premium-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+.card-header-custom {
+  text-align: center;
+  padding: 24px 20px 16px;
+  background: linear-gradient(180deg, #f8f9fa 0%, #fff 100%);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.avatar-circle {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 auto 12px;
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
+  border: 3px solid #fff;
+}
+
+.form-label-custom {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.input-group-custom {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.input-group-custom:focus-within {
+  border-color: #28a745;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  color: #adb5bd;
+  font-size: 0.95rem;
+}
+
+.input-group-custom:focus-within .input-icon {
+  color: #28a745;
+}
+
+.form-control-custom {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #212529;
+  outline: none;
+}
+
+.form-control-custom::placeholder {
+  color: #adb5bd;
+  font-size: 0.85rem;
+}
+
+.readonly-group {
+  background-color: #f8f9fa;
+  border-color: #e9ecef;
+
+  .form-control-custom {
+    color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  .input-icon {
+    color: #ced4da;
+  }
+}
+
+.helper-text {
+  font-size: 0.7rem;
+  color: #adb5bd;
+  margin-top: 4px;
+  padding-left: 2px;
+}
+
+.btn-premium {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(40, 167, 69, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(40, 167, 69, 0.3);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.2);
+  }
+
+  &:disabled {
+    background: #8cd99f;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.auth-otp-input {
+  font-size: 1.5rem;
+  letter-spacing: 0.5rem;
+}
+
+/* =====================================================
+   15. ADDRESS CARDS
+===================================================== */
+
+.address-option {
+  cursor: pointer;
+}
+
+.address-option--active {
+  border-color: var(--kk-brand-primary) !important;
+  background: rgba(26, 127, 60, 0.05);
+}
+
+.address-card {
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.address-label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--kk-brand-primary);
+  background: rgba(26, 127, 60, 0.08);
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+}
+
+.badge-default {
+  display: inline-flex;
+  align-items: center;
+  background: #fffaeb;
+  color: #b54708;
+  border: 1px solid #fedf89;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.contact-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--kk-brand-text);
+}
+
+.contact-phone {
+  font-size: 0.9rem;
+  color: var(--kk-brand-muted);
+  display: flex;
+  align-items: center;
+
+  i {
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+}
+
+.address-text {
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.actions-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f4f5f7;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  background: transparent;
+
+  i {
+    font-size: 1rem;
+  }
+
+  &.btn-edit {
+    color: var(--kk-brand-text);
+    border-color: #e5e7eb;
+    background: #fff;
+
+    &:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+      color: var(--kk-brand-primary);
+    }
+  }
+
+  &.btn-delete {
+    color: #b91c1c;
+    border-color: #fecaca;
+    background: #fef2f2;
+
+    &:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #991b1b;
+    }
+  }
+}
+
+/* =====================================================
+   16. RESPONSIVE STYLES
+===================================================== */
+
 @media (max-width: 767.98px) {
   .product-toolbar {
     flex-direction: column;
@@ -987,8 +1513,6 @@ a {
     font-size: 1.05rem;
   }
 
-  // The sheet's own header above already says "Filters" -- the panel's own title would just
-  // repeat it right below.
   .filter-drawer__body .filter-panel__title {
     display: none;
   }
@@ -1008,7 +1532,7 @@ a {
   }
 
   .filter-drawer__body {
-    overflow-y: auto; // horizontal inset comes from .filter-panel's own padding, same as desktop
+    overflow-y: auto;
   }
 
   .filter-drawer__footer {
@@ -1020,5 +1544,142 @@ a {
 
   .search-results__layout {
     display: block;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .department-category-tile {
+    min-height: 160px;
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  .department-category-tile__name {
+    font-size: 0.95rem;
+  }
+
+  .category-browse__header {
+    flex-wrap: wrap;
+  }
+
+  .category-browse__header h4 {
+    font-size: 1.15rem;
+  }
+
+  .category-browse__search {
+    width: 100%;
+    order: 1;
+  }
+
+  .category-browse__layout {
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .category-browse__sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px 0;
+    border-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .category-browse__filters,
+  .search-results__filters {
+    order: 0;
+  }
+
+  .category-browse__subcategory {
+    flex: 0 0 82px;
+    min-height: 100px;
+  }
+
+  .category-browse__subcategory-image {
+    width: 58px;
+    height: 58px;
+  }
+
+  .category-browse__products {
+    padding: 16px 0;
+  }
+
+  .cart-item-row__actions {
+    flex-basis: 100%;
+    justify-content: space-between;
+  }
+
+  .order-card {
+    &__header {
+      padding: 1rem;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    &__price {
+      font-size: 1.1rem;
+    }
+
+    &__body {
+      padding: 1rem;
+    }
+
+    &__meta {
+      gap: 1rem;
+      flex-direction: column;
+    }
+
+    &__footer {
+      padding: 1rem;
+    }
+
+    &__action-hint {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .account-page {
+    padding: 16px 16px 0;
+  }
+
+  .account-page .page-header {
+    margin-bottom: 14px;
+  }
+
+  .account-page .page-title {
+    font-size: 24px;
+  }
+
+  .account-page .page-subtitle {
+    font-size: 14px;
+  }
+
+  .account-content {
+    padding: 14px 16px 20px;
+  }
+
+  .bookings-content.container {
+    padding: 8px 16px 20px;
+  }
+
+  .try-buy-bookings > h4 {
+    font-size: 22px;
+  }
+
+  .try-buy-booking-card .card-body {
+    padding: 14px;
+  }
+
+  .try-buy-booking-card .cart-item-image {
+    width: 60px;
+    height: 68px;
+  }
+
+  .kk-tab-toggle button {
+    padding: 9px 20px;
+    font-size: 14px;
   }
 }

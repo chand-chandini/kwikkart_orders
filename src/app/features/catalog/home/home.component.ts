@@ -1,10 +1,17 @@
+
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { OrgContextService } from '../../../core/services/org-context.service';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Banner, Category, Product } from '../../../core/models/product.model';
+
+import {
+  Banner,
+  Category,
+  Product
+} from '../../../core/models/product.model';
+
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
@@ -20,37 +27,73 @@ interface CategorySection {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, ProductCardComponent, SpinnerComponent, EmptyStateComponent, AppDownloadModalComponent],
-  templateUrl: './home.component.html'
+  imports: [
+    RouterLink,
+    ProductCardComponent,
+    SpinnerComponent,
+    EmptyStateComponent,
+    AppDownloadModalComponent
+  ],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
+
   private readonly orgContext = inject(OrgContextService);
   private readonly catalog = inject(CatalogService);
   private readonly auth = inject(AuthService);
 
   loading = true;
   categoriesError = '';
+
   banners: Banner[] = [];
   categorySections: CategorySection[] = [];
   products: Product[] = [];
+
   showAppDownloadModal = false;
+
   private storeCategoriesLoaded = false;
   private storeCategories: Category[] = [];
+
   private catalogProducts: Product[] = [];
   private catalogProductsLoaded = false;
+
   private fallbackCategoriesRequested = false;
 
   get orgCode(): string {
     return this.orgContext.getCurrentCode() ?? '';
   }
 
+  get orgId(): number {
+    return this.orgContext.requireOrgId();
+  }
+
+  get hasProducts(): boolean {
+    return this.products.length > 0;
+  }
+
+  get hasCategories(): boolean {
+    return this.categorySections.some(
+      section => section.categories.length > 0
+    );
+  }
+
   ngOnInit(): void {
+
     const orgId = this.orgContext.requireOrgId();
+
+    this.showAppDownloadModal = this.auth.consumeJustLoggedIn();
+
     this.catalog.listCategories(orgId).subscribe({
-      next: (categories) => {
+      next: categories => {
         this.storeCategoriesLoaded = true;
-        this.storeCategories = categories;
-        this.applyCategories(categories);
+        this.storeCategories = categories || [];
+
+        if (this.storeCategories.length) {
+          this.applyCategories(this.storeCategories);
+        } else {
+          this.tryLoadCategoryFallback();
+        }
       },
       error: () => {
         this.storeCategoriesLoaded = true;
@@ -59,68 +102,138 @@ export class HomeComponent implements OnInit {
     });
 
     this.catalog.searchProducts(orgId, { limit: 50 }).subscribe({
-      next: (products) => {
-        this.catalogProducts = products;
+      next: products => {
+        this.catalogProducts = products || [];
         this.catalogProductsLoaded = true;
-        this.products = products.slice(0, 16);
-        if (this.storeCategoriesLoaded && !this.storeCategories.length) {
+        this.products = this.catalogProducts.slice(0, 16);
+
+        if (
+          this.storeCategoriesLoaded &&
+          !this.storeCategories.length
+        ) {
           this.tryLoadCategoryFallback();
         }
       },
       error: () => {
         this.catalogProductsLoaded = true;
-        if (this.storeCategoriesLoaded && !this.storeCategories.length) {
-          this.applyCategories([]);
+
+        if (
+          this.storeCategoriesLoaded &&
+          !this.storeCategories.length
+        ) {
+          this.tryLoadCategoryFallback();
         }
       }
     });
 
     this.catalog.listBanners(orgId).subscribe({
-      next: (banners) => (this.banners = banners),
-      error: () => (this.banners = [])
+      next: banners => {
+        this.banners = banners || [];
+      },
+      error: () => {
+        this.banners = [];
+      }
     });
-    this.showAppDownloadModal = this.auth.consumeJustLoggedIn();
+
+  }
+
+  // DISCOVER MORE: SCROLL TO FEATURED PRODUCTS
+  scrollToProducts(): void {
+
+    const productsSection = document.getElementById('products-row');
+
+    if (!productsSection) {
+      return;
+    }
+
+    productsSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
+  }
+
+  closeAppDownloadModal(): void {
+    this.showAppDownloadModal = false;
   }
 
   private applyCategories(categories: Category[]): void {
+
     const sections = new Map<string, CategorySection>();
-    categories.forEach((category) => {
+
+    categories.forEach(category => {
+
       const departmentId = category.department_id ?? null;
       const departmentName = category.department_name || 'Other';
-      const key = departmentId === null ? `name:${departmentName}` : `id:${departmentId}`;
+
+      const key = departmentId === null
+        ? `name:${departmentName}`
+        : `id:${departmentId}`;
+
       let section = sections.get(key);
+
       if (!section) {
-        section = { key, departmentId, departmentName, categories: [] };
+        section = {
+          key,
+          departmentId,
+          departmentName,
+          categories: []
+        };
+
         sections.set(key, section);
       }
+
       section.categories.push(category);
+
     });
+
     this.categorySections = Array.from(sections.values());
     this.categoriesError = '';
     this.loading = false;
+
   }
 
-  // Some API deployments still return an empty org-scoped category list. Fall back to the
-  // active taxonomy, but only show categories represented by this store's own products.
   private tryLoadCategoryFallback(): void {
-    if (!this.catalogProductsLoaded) {
+
+    if (!this.catalogProductsLoaded || !this.storeCategoriesLoaded) {
       return;
     }
+
     if (this.fallbackCategoriesRequested) {
       return;
     }
+
     this.fallbackCategoriesRequested = true;
-    const productCategoryIds = new Set(this.catalogProducts.map((product) => product.category_id));
+
+    const productCategoryIds = new Set(
+      this.catalogProducts.map(product => product.category_id)
+    );
+
     if (!productCategoryIds.size) {
       this.applyCategories([]);
       return;
     }
+
     this.catalog.listCategories().subscribe({
-      next: (categories) => this.applyCategories(categories.filter((category) => productCategoryIds.has(category.id))),
+      next: categories => {
+
+        const matchingCategories = (categories || []).filter(
+          category => productCategoryIds.has(category.id)
+        );
+
+        this.applyCategories(matchingCategories);
+
+      },
       error: () => {
-        this.categoriesError = 'Could not load this store’s categories. Please refresh and try again.';
+
+        this.categoriesError =
+          'Could not load this store’s categories. Please refresh and try again.';
+
         this.loading = false;
+
       }
     });
+
   }
+
 }

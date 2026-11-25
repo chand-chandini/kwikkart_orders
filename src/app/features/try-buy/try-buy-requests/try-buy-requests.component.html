@@ -1,86 +1,150 @@
+
 @if (loading) {
   <app-spinner label="Loading your bookings..." />
 } @else {
-  <div class="container py-4" style="max-width: 760px;">
+  <div class="try-buy-bookings py-3">
+
     <h4 class="fw-bold mb-3">My Try &amp; Buy bookings</h4>
 
     @if (error) {
-      <button type="button" class="alert alert-danger small w-100 text-start border-0" (click)="load()">{{ error }}. Tap to retry.</button>
+      <button
+        type="button"
+        class="alert alert-danger small w-100 text-start border-0"
+        (click)="load()">
+        {{ error }}. Tap to retry.
+      </button>
     }
 
     @if (!error && !requests.length) {
-      <app-empty-state icon="🏠" title="No bookings yet" message="Your Try & Buy bookings will appear here." />
+      <app-empty-state
+        icon="🏠"
+        title="No bookings yet"
+        message="Your Try & Buy bookings will appear here." />
     }
 
-    @for (req of requests; track req.id) {
-      <div class="card mb-3">
-        <div class="card-body">
-          <div class="d-flex align-items-start gap-2 mb-2">
-            <div class="flex-grow-1 min-w-0">
-              <div class="fw-semibold">{{ req.vendor_name }}</div>
-              <div class="small text-muted">
-                @if (req.order_number) {
-                  Order #{{ req.order_number }} ·
-                }
-                {{ req.created_at | date: 'd MMM, h:mm a' }}
-              </div>
-            </div>
-            <span class="badge" [class]="'tb-status tb-status--' + statusKey(req)">{{ statusLabel(req) }}</span>
-          </div>
+    <div class="try-buy-booking-list">
 
-          @for (it of req.items; track itemKey(it)) {
-            <div class="d-flex align-items-center gap-2 py-2 border-top">
-              <img [src]="it.image_url" class="cart-item-image" alt="" />
+      @for (req of requests; track req.id) {
+        <div class="card try-buy-booking-card mb-3">
+
+          <div class="card-body">
+
+            <div class="d-flex align-items-start gap-2 mb-2">
+
               <div class="flex-grow-1 min-w-0">
-                <div class="small fw-semibold">{{ it.product_name }}</div>
+                <div class="fw-semibold">{{ req.vendor_name }}</div>
+
                 <div class="small text-muted">
-                  {{ it.variant_name ? 'Size ' + it.variant_name + ' · ' : '' }}{{ it.color ? 'Colour ' + it.color + ' · ' : '' }}Qty {{ it.qty }}
+                  @if (req.order_number) {
+                    Order #{{ req.order_number }} ·
+                  }
+                  {{ req.created_at | date: 'd MMM, h:mm a' }}
                 </div>
               </div>
-              <div class="small fw-semibold">{{ it.price | currency: 'INR' : 'symbol' : '1.0-2' }}</div>
-            </div>
-          }
 
-          <div class="d-flex justify-content-between small mt-2">
-            <span class="text-muted">Items value</span>
-            <span>{{ req.items_value | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
-          </div>
-          <div class="d-flex justify-content-between small">
-            <span class="text-muted">Try &amp; Buy delivery</span>
-            <span>{{ req.delivery_charge > 0 ? (req.delivery_charge | currency: 'INR' : 'symbol' : '1.0-2') : 'Free' }}</span>
-          </div>
-          @if (slotText(req)) {
-            <div class="small text-muted mt-1">Delivery slot: {{ slotText(req) }}</div>
-          }
-          @if (req.status === 'rejected' && req.rejected_reason) {
-            <div class="small text-muted mt-1">Seller's reason: {{ req.rejected_reason }}</div>
-          }
-          @if (req.note) {
-            <div class="small text-muted mt-1">Note: {{ req.note }}</div>
-          }
+              <span
+                class="badge"
+                [class]="'tb-status tb-status--' + statusKey(req)">
+                {{ statusLabel(req) }}
+              </span>
 
-          @if (canShare(req) || req.status === 'requested') {
-            <div class="d-flex gap-2 mt-3">
-              @if (canShare(req)) {
-                <button type="button" class="btn tb-btn-outline btn-sm flex-grow-1" [disabled]="sharingId === req.id" (click)="share(req)">
-                  @if (sharingId === req.id) {
-                    <span class="spinner-border spinner-border-sm me-1"></span>
-                  }
-                  Share
-                </button>
-              }
-              @if (req.status === 'requested') {
-                <button type="button" class="btn btn-outline-danger btn-sm flex-grow-1" [disabled]="cancellingId === req.id" (click)="cancel(req)">
-                  @if (cancellingId === req.id) {
-                    <span class="spinner-border spinner-border-sm me-1"></span>
-                  }
-                  Cancel booking
-                </button>
-              }
             </div>
-          }
+
+            @for (it of req.items; track itemKey(it)) {
+              <div class="d-flex align-items-center gap-2 py-2 border-top">
+
+                <img
+                  [src]="it.image_url"
+                  class="cart-item-image"
+                  alt="" />
+
+                <div class="flex-grow-1 min-w-0">
+                  <div class="small fw-semibold">
+                    {{ it.product_name }}
+                  </div>
+
+                  <div class="small text-muted">
+                    {{ it.variant_name ? 'Size ' + it.variant_name + ' · ' : '' }}{{ it.color ? 'Colour ' + it.color + ' · ' : '' }}Qty {{ it.qty }}
+                  </div>
+                </div>
+
+                <div class="small fw-semibold">
+                  {{ it.price | currency: 'INR' : 'symbol' : '1.0-2' }}
+                </div>
+
+              </div>
+            }
+
+            <div class="d-flex justify-content-between small mt-2">
+              <span class="text-muted">Items value</span>
+              <span>{{ req.items_value | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+
+            <div class="d-flex justify-content-between small">
+              <span class="text-muted">Try &amp; Buy delivery</span>
+              <span>
+                {{ req.delivery_charge > 0 ? (req.delivery_charge | currency: 'INR' : 'symbol' : '1.0-2') : 'Free' }}
+              </span>
+            </div>
+
+            @if (slotText(req)) {
+              <div class="small text-muted mt-1">
+                Delivery slot: {{ slotText(req) }}
+              </div>
+            }
+
+            @if (req.status === 'rejected' && req.rejected_reason) {
+              <div class="small text-muted mt-1">
+                Seller's reason: {{ req.rejected_reason }}
+              </div>
+            }
+
+            @if (req.note) {
+              <div class="small text-muted mt-1">
+                Note: {{ req.note }}
+              </div>
+            }
+
+            @if (canShare(req) || req.status === 'requested') {
+              <div class="d-flex gap-2 mt-3">
+
+                @if (canShare(req)) {
+                  <button
+                    type="button"
+                    class="btn tb-btn-share btn-sm flex-grow-1"
+                    [disabled]="sharingId === req.id"
+                    (click)="share(req)">
+
+                    @if (sharingId === req.id) {
+                      <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+
+                    Share
+                  </button>
+                }
+
+                @if (req.status === 'requested') {
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm flex-grow-1"
+                    [disabled]="cancellingId === req.id"
+                    (click)="cancel(req)">
+
+                    @if (cancellingId === req.id) {
+                      <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+
+                    Cancel booking
+                  </button>
+                }
+
+              </div>
+            }
+
+          </div>
         </div>
-      </div>
-    }
+      }
+
+    </div>
   </div>
 }
